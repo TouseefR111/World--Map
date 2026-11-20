@@ -1,0 +1,2202 @@
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: #f5f7fa;
+  background: #030711;
+  font-family: Inter, Arial, sans-serif;
+  isolation: isolate;
+}
+
+
+.world-map {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: #030711;
+  overflow: hidden;
+}
+
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3, 7, 19, .15),
+      rgba(3, 7, 19, .04) 55%,
+      rgba(3, 7, 19, .18)
+    ),
+    linear-gradient(
+      180deg,
+      rgba(3, 7, 19, .25),
+      transparent 34%,
+      rgba(3, 7, 19, .35)
+    );
+}
+
+
+.map-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 45% 48%, transparent 15%, rgba(0, 3, 14, .45) 100%);
+}
+
+.map-grid {
+  position: absolute;
+  inset: 0;
+  opacity: .12;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(130, 170, 210, .15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(130, 170, 210, .15) 1px, transparent 1px);
+  background-size: 100px 100px;
+}
+
+/* Header */
+
+.topbar {
+  height: 85px;
+  padding: 0 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(3, 7, 19, .35);
+  backdrop-filter: blur(12px);
+}
+
+.brand,
+.header-right,
+.brand-icon {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  gap: 13px;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  justify-content: center;
+  border: 1px solid rgba(88, 231, 162, .45);
+  color: #55e6a1;
+  border-radius: 50%;
+  background: rgba(28, 164, 105, .12);
+}
+
+.brand h1 {
+  font-size: 19px;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+.brand h1 span {
+  color: #58e7a2;
+}
+
+.brand p {
+  margin: 4px 0 0;
+  color: #a0afc2;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.header-right {
+  gap: 24px;
+}
+
+.live-indicator {
+  color: #c2cbd8;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.live-indicator span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4be69b;
+  box-shadow: 0 0 12px #4be69b;
+}
+
+.sound-button {
+  background: rgba(255,255,255,.07);
+  color: white;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 50%;
+  width: 39px;
+  height: 39px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+/* Main content */
+
+.main-content {
+  position: relative;
+  min-height: calc(100vh - 145px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.intro {
+  position: absolute;
+  top: 45px;
+  left: 72%;
+  transform: translateX(-50%);
+  width: 440px;
+  max-width: 42%;
+  text-align: center;
+  padding-top: 0;
+  z-index: 2;
+}
+
+.eyebrow {
+  color: #63e8a8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+
+.intro h2 {
+  font-size: clamp(32px, 3.3vw, 46px);
+  line-height: 1.08;
+  letter-spacing: 3px;
+  margin: 14px 0 10px;
+  font-weight: 800;
+  text-shadow: 0 3px 20px rgba(0,0,0,.7);
+}
+
+
+.intro h2 span {
+  color: #5de5a3;
+}
+
+.intro p {
+  font-size: 13px;
+  color: #c3ccda;
+  line-height: 1.7;
+}
+
+/* Wheel */
+
+
+
+.wheel-container {
+  position: absolute;
+  left: 40%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+}
+
+
+
+
+.wheel-label {
+  font-size: 9px;
+  color: #d3e3e2;
+  letter-spacing: 2px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-bottom: 14px;
+  white-space: nowrap;
+}
+
+
+.label-line {
+  height: 1px;
+  width: 27px;
+  background: #4de3a1;
+}
+
+.wheel-outer {
+  position: relative;
+  width: 270px;
+  height: 270px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 35px rgba(0, 230, 143, .2));
+}
+
+.wheel-ring {
+  position: absolute;
+  inset: -8px;
+  border: 2px solid rgba(80, 232, 165, .65);
+  border-radius: 50%;
+  box-shadow:
+    0 0 12px rgba(80, 232, 165, .4),
+    inset 0 0 12px rgba(80, 232, 165, .2);
+}
+
+.wheel {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 5px solid rgba(205, 237, 223, .8);
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      #102d35 0deg 3.25deg,
+      #24504a 3.25deg 3.45deg,
+      #152b3b 3.45deg 3.6deg
+    );
+  box-shadow:
+    inset 0 0 0 8px rgba(4, 11, 24, .8),
+    inset 0 0 22px rgba(0,0,0,.9);
+}
+
+.wheel::after {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(111, 238, 185, .5);
+  border-radius: 50%;
+}
+
+.wheel-center-decoration {
+  position: absolute;
+  inset: 26px;
+  border: 1px dashed rgba(100, 226, 177, .35);
+  border-radius: 50%;
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: 39px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 22px solid #62f2ac;
+  z-index: 8;
+  filter: drop-shadow(0 0 8px #4ef2a7);
+}
+
+.wheel-center {
+  position: relative;
+  width: 135px;
+  height: 135px;
+  background: radial-gradient(circle, #102d30, #07131c 75%);
+  border: 2px solid #63e6a9;
+  border-radius: 50%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 22px rgba(72, 232, 158, .4),
+    inset 0 0 20px rgba(72, 232, 158, .1);
+}
+
+.center-number {
+  color: white;
+  font-size: 33px;
+  font-weight: 800;
+}
+
+.center-caption {
+  color: #8db5a6;
+  font-size: 8px;
+  letter-spacing: 2px;
+  margin: 2px 0 10px;
+}
+
+.spin-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #69f3ae, #21b77b);
+  color: #041b13;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(72, 232, 158, .4);
+  transition: .25s;
+}
+
+.spin-button:hover:not(:disabled) {
+  transform: scale(1.07);
+  box-shadow: 0 0 30px rgba(72, 232, 158, .7);
+}
+
+.spin-button:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.wheel-bottom {
+  color: #d2e6df;
+  font-size: 9px;
+  letter-spacing: 3px;
+  margin-top: 20px;
+}
+
+/* Location marker */
+
+.location-marker {
+  position: absolute;
+  z-index: 7;
+  transform: translate(-50%, -50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+}
+
+.marker-dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #44f4a1;
+  box-shadow: 0 0 12px #44f4a1;
+  z-index: 2;
+}
+
+.marker-pulse {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(64, 244, 161, .35);
+  animation: pulse 1.6s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(.5); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.marker-label {
+  position: absolute;
+  left: 23px;
+  top: -5px;
+  background: rgba(4, 19, 23, .92);
+  color: #70f0b1;
+  border: 1px solid rgba(82, 232, 164, .5);
+  border-radius: 5px;
+  padding: 7px 10px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Story card */
+
+.story-card {
+  position: absolute;
+  z-index: 10;
+  right: 5%;
+  top: 42%;
+  width: min(310px, 85vw);
+  padding: 23px;
+  border: 1px solid rgba(93, 230, 167, .4);
+  border-radius: 14px;
+  background: rgba(5, 17, 29, .94);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 15px 50px rgba(0,0,0,.45);
+  animation: appear .35s ease;
+}
+
+@keyframes appear {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.close-story {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  color: #b7c8c9;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.story-number {
+  color: #58e7a2;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.story-card h3 {
+  font-size: 26px;
+  margin: 13px 0 5px;
+}
+
+.story-country {
+  color: #a9bac8;
+  font-size: 12px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.story-card p {
+  color: #c8d3df;
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 18px 0;
+}
+
+.story-footer {
+  border-top: 1px solid rgba(255,255,255,.12);
+  padding-top: 14px;
+  color: #65e8aa;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  display: flex;
+  gap: 8px;
+}
+
+/* Result banner */
+
+.result-banner {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 17px;
+  border: 1px solid rgba(86, 231, 165, .4);
+  background: rgba(4, 19, 27, .94);
+  border-radius: 10px;
+  min-width: 300px;
+  z-index: 9;
+}
+
+.result-icon {
+  color: #64ecac;
+}
+
+.result-banner div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result-banner small {
+  font-size: 8px;
+  letter-spacing: 1px;
+  color: #80b6a0;
+}
+
+.result-banner strong {
+  font-size: 12px;
+}
+
+.result-banner button {
+  margin-left: auto;
+  color: #5de8a6;
+  border: 1px solid rgba(93,232,166,.4);
+  background: transparent;
+  padding: 8px;
+  border-radius: 5px;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+/* Footer */
+
+.bottom-bar {
+  position: relative;
+  min-height: 60px;
+  padding: 10px 5%;
+  border-top: 1px solid rgba(255,255,255,.1);
+  background: rgba(3, 7, 19, .7);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  z-index: 10;
+}
+
+.footer-item,
+.history-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #aab9c8;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.footer-item svg,
+.history-area svg {
+  color: #5ce5a5;
+}
+
+.history-list {
+  display: flex;
+  gap: 5px;
+}
+
+.history-list span {
+  color: #5de5a4;
+  background: rgba(70,220,150,.1);
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.demo-note {
+  position: absolute;
+  bottom: 70px;
+  right: 20px;
+  color: rgba(255,255,255,.5);
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+  .wheel-container {
+    left: 50%;
+    top: 58%;
+    transform: translate(-50%, -50%);
+  }
+
+  .story-card {
+    top: auto;
+    bottom: 110px;
+    right: 15px;
+  }
+
+  .bottom-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    height: 70px;
+    padding: 0 17px;
+  }
+
+  .brand h1 {
+    font-size: 16px;
+  }
+
+  .brand p {
+    font-size: 7px;
+  }
+
+  .live-indicator {
+    display: none;
+  }
+
+  .main-content {
+    min-height: calc(100vh - 130px);
+  }
+
+  .intro {
+    padding: 30px 10px 0;
+  }
+
+  .intro h2 {
+    font-size: 34px;
+  }
+
+  .intro p {
+    font-size: 11px;
+  }
+
+  .wheel-container {
+    top: 57%;
+    width: 290px;
+  }
+
+  .wheel-outer {
+    width: 235px;
+    height: 235px;
+  }
+
+  .wheel-center {
+    width: 120px;
+    height: 120px;
+  }
+
+  .wheel-pointer {
+    top: 41px;
+  }
+
+  .wheel-label {
+    font-size: 8px;
+  }
+
+  .bottom-bar {
+    gap: 12px;
+    padding: 14px 8px;
+  }
+
+  .footer-item {
+    font-size: 8px;
+  }
+
+  .history-area {
+    display: none;
+  }
+
+ .result-banner {
+  position: absolute;
+  top: 65%;
+  left: 72%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+  .story-card {
+    right: 15px;
+    left: 15px;
+    bottom: 95px;
+    width: auto;
+  }
+
+  .demo-note {
+    display: none;
+  }
+}
+
+
+@media (max-width: 900px) {
+  .intro {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+    padding: 30px 12px 0;
+  }
+
+  .wheel-container {
+    left: 50%;
+    top: 60%;
+    transform: translate(-50%, -50%);
+  }
+
+  .result-banner {
+  left: 50%;
+  top: auto;
+  bottom: 15px;
+  transform: translateX(-50%);
+}
+}
+
+
+/* =====================================
+   WORLDSPIN - PROFESSIONAL 100 SEGMENT WHEEL
+===================================== */
+
+.wheel-outer {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 28px rgba(0, 230, 143, .24));
+}
+
+.wheel-ring {
+  position: absolute;
+  inset: -8px;
+  z-index: 1;
+  border: 2px solid rgba(80, 232, 165, .7);
+  border-radius: 50%;
+  box-shadow:
+    0 0 14px rgba(80, 232, 165, .4),
+    inset 0 0 12px rgba(80, 232, 165, .2);
+  pointer-events: none;
+}
+
+.wheel-graphic {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  z-index: 2;
+}
+
+.wheel-graphic svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.wheel-center {
+  position: relative;
+  z-index: 4;
+  width: 135px;
+  height: 135px;
+  background: radial-gradient(circle, #102d30, #07131c 75%);
+  border: 2px solid #63e6a9;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 22px rgba(72, 232, 158, .4),
+    inset 0 0 20px rgba(72, 232, 158, .1);
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 24px solid #62f2ac;
+  z-index: 8;
+  filter: drop-shadow(0 0 9px #4ef2a7);
+}
+
+.wheel-center .spin-button {
+  position: relative;
+  z-index: 5;
+}
+
+@media (max-width: 600px) {
+  .wheel-outer {
+    width: 235px;
+    height: 235px;
+  }
+
+  .wheel-center {
+    width: 120px;
+    height: 120px;
+  }
+
+  .wheel-pointer {
+    top: 24px;
+  }
+}
+
+
+/* ==========================================
+   WORLDSPIN - FIXED FULL-SCREEN EXPERIENCE
+========================================== */
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app {
+  position: relative;
+  display: grid;
+  grid-template-rows: 76px minmax(0, 1fr) 58px;
+
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.topbar {
+  position: relative;
+  z-index: 30;
+  height: 76px;
+  min-height: 76px;
+}
+
+.world-map {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.maplibre-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-overlay,
+.map-vignette,
+.map-grid {
+  pointer-events: none;
+}
+
+.main-content {
+  position: relative;
+  display: block;
+
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+.bottom-bar {
+  position: relative;
+  z-index: 30;
+
+  height: 58px;
+  min-height: 58px;
+
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+/* ==========================================
+   DISCOVERY MODE - COMPACT WHEEL
+========================================== */
+
+.wheel-container {
+  z-index: 20;
+  cursor: default;
+
+  transition:
+    left 1s cubic-bezier(.22, 1, .36, 1),
+    top 1s cubic-bezier(.22, 1, .36, 1),
+    transform 1s cubic-bezier(.22, 1, .36, 1),
+    opacity 1s ease,
+    filter 1s ease;
+
+  will-change: transform, opacity;
+}
+
+.discovery-mode .intro {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transform: translateX(65px);
+
+  transition:
+    opacity .65s ease,
+    transform .85s ease,
+    visibility .65s;
+}
+
+.discovery-mode .wheel-container {
+  position: absolute;
+
+  left: 16px;
+  top: 14px;
+
+  width: 340px;
+
+  transform: scale(.36);
+  transform-origin: top left;
+
+  opacity: .86;
+
+  z-index: 45;
+  cursor: pointer;
+
+  filter:
+    drop-shadow(0 0 18px rgba(72, 232, 158, .35));
+}
+
+.discovery-mode .wheel-container:hover {
+  transform: scale(.39);
+  opacity: 1;
+}
+
+.discovery-mode .wheel-label,
+.discovery-mode .wheel-bottom {
+  display: none;
+}
+
+.discovery-mode .wheel-center .spin-button {
+  font-size: 9px;
+  padding: 7px 12px;
+}
+
+/* ==========================================
+   DESTINATION SIDEBAR
+========================================== */
+
+.destination-panel {
+  position: absolute;
+
+  top: 14px;
+  right: 14px;
+  bottom: 14px;
+
+  width: min(360px, 29vw);
+  max-width: calc(100% - 28px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  z-index: 25;
+
+  border: 1px solid rgba(89, 229, 165, .38);
+  border-radius: 14px;
+
+  background: rgba(4, 15, 25, .96);
+
+  box-shadow:
+    0 15px 55px rgba(0, 0, 0, .45),
+    0 0 25px rgba(40, 220, 140, .08);
+
+  backdrop-filter: blur(20px);
+
+  animation: sidebarEnter .8s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes sidebarEnter {
+  from {
+    opacity: 0;
+    transform: translateX(35px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Constrain image strictly inside sidebar */
+
+.destination-panel-photo {
+  position: relative;
+
+  width: 100%;
+  height: clamp(145px, 23vh, 205px);
+  min-height: 145px;
+
+  flex: 0 0 clamp(145px, 23vh, 205px);
+
+  overflow: hidden;
+
+  background: #10252d;
+}
+
+.destination-panel-photo img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  max-width: 100%;
+  object-fit: cover;
+
+  position: absolute;
+  inset: 0;
+}
+
+/* Sidebar content scrolls internally,
+   never the complete website */
+
+.destination-panel-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 19px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #28664f transparent;
+}
+
+.destination-panel-content h2 {
+  font-size: 25px;
+  line-height: 1.2;
+  margin: 12px 0 7px;
+}
+
+.destination-story {
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+/* Back/close controls */
+
+.destination-close,
+.destination-return {
+  cursor: pointer;
+}
+
+.destination-return {
+  flex-shrink: 0;
+}
+
+/* Hide old demonstration label during discovery */
+
+.discovery-mode .demo-note {
+  opacity: 0;
+}
+
+/* ==========================================
+   RESPONSIVE LAYOUT
+========================================== */
+
+@media (max-width: 900px) {
+  .discovery-mode .wheel-container {
+    left: 10px;
+    top: 10px;
+    transform: scale(.31);
+  }
+
+  .destination-panel {
+    width: min(340px, 43vw);
+    top: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .destination-panel-content {
+    padding: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app {
+    grid-template-rows: 65px minmax(0, 1fr) 48px;
+  }
+
+  .topbar {
+    height: 65px;
+    min-height: 65px;
+  }
+
+  .bottom-bar {
+    height: 48px;
+    min-height: 48px;
+  }
+
+  .discovery-mode .wheel-container {
+    left: 8px;
+    top: 8px;
+    transform: scale(.25);
+  }
+
+  .destination-panel {
+    left: auto;
+    right: 8px;
+    top: 8px;
+    bottom: 8px;
+
+    width: 48%;
+    max-width: 48%;
+  }
+
+  .destination-panel-photo {
+    height: 120px;
+    min-height: 120px;
+    flex-basis: 120px;
+  }
+
+  .destination-panel-content h2 {
+    font-size: 19px;
+  }
+
+  .destination-story {
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .destination-coordinates {
+    grid-template-columns: 1fr;
+  }
+
+  .destination-return {
+    font-size: 8px;
+    padding: 9px 5px;
+  }
+}
+
+
+/* Append this file's contents to the BOTTOM of src/App.css. */
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app {
+  position: relative;
+  display: grid;
+  grid-template-rows: 76px minmax(0, 1fr) 58px;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: #030711;
+}
+
+.world-map {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #030711;
+}
+
+.maplibre-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-overlay,
+.map-vignette,
+.map-grid {
+  pointer-events: none;
+}
+
+.topbar {
+  position: relative;
+  z-index: 30;
+  height: 76px;
+  min-height: 76px;
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bottom-bar {
+  position: relative;
+  z-index: 30;
+  height: 58px;
+  min-height: 58px;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+/* Overview layout: retain your existing desktop positions where possible. */
+.intro {
+  transition:
+    opacity 0.65s ease,
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.65s;
+}
+
+.wheel-container {
+  transition:
+    left 1s cubic-bezier(0.22, 1, 0.36, 1),
+    top 1s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 1s ease,
+    filter 1s ease;
+  will-change: transform, opacity;
+}
+
+/* Discovery mode: hide intro and shrink the wheel into a small control. */
+.discovery-mode .intro {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(55px);
+}
+
+.discovery-mode .wheel-container {
+  position: absolute;
+  left: 16px;
+  top: 14px;
+  width: 340px;
+  transform: scale(0.36);
+  transform-origin: top left;
+  opacity: 0.86;
+  z-index: 45;
+  cursor: pointer;
+  filter: drop-shadow(0 0 18px rgba(72, 232, 158, 0.35));
+}
+
+.discovery-mode .wheel-container:hover {
+  transform: scale(0.39);
+  opacity: 1;
+}
+
+.discovery-mode .wheel-label,
+.discovery-mode .wheel-bottom {
+  display: none;
+}
+
+.discovery-mode .wheel-container .spin-button {
+  font-size: 9px;
+  padding: 7px 12px;
+}
+
+.discovery-mode .wheel-graphic {
+  cursor: pointer;
+}
+
+.discovery-mode .wheel-graphic:focus-visible {
+  outline: 2px solid #63e6a9;
+  outline-offset: 6px;
+  border-radius: 50%;
+}
+
+/* Fixed-width destination sidebar. It never takes over the page. */
+.destination-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: min(360px, 30vw);
+  max-width: calc(100% - 24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 25;
+  border: 1px solid rgba(89, 229, 165, 0.38);
+  border-radius: 14px;
+  background: rgba(4, 15, 25, 0.96);
+  box-shadow:
+    0 15px 55px rgba(0, 0, 0, 0.45),
+    0 0 25px rgba(40, 220, 140, 0.08);
+  backdrop-filter: blur(20px);
+  animation: worldspinSidebarEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes worldspinSidebarEnter {
+  from {
+    opacity: 0;
+    transform: translateX(35px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.destination-close {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(3, 10, 18, 0.78);
+  cursor: pointer;
+}
+
+.destination-close span {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.destination-close:disabled,
+.destination-return:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.destination-panel-photo {
+  position: relative;
+  flex: 0 0 clamp(145px, 23vh, 205px);
+  width: 100%;
+  min-height: 145px;
+  overflow: hidden;
+  background: #10252d;
+}
+
+.destination-panel-photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.destination-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(3, 10, 18, 0.85), transparent 65%);
+  pointer-events: none;
+}
+
+.destination-photo-label {
+  position: absolute;
+  left: 17px;
+  bottom: 15px;
+  color: #79efb7;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+
+.destination-panel-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 19px;
+  scrollbar-width: thin;
+  scrollbar-color: #28664f transparent;
+}
+
+.destination-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #63e9aa;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+
+.destination-panel-content h2 {
+  margin: 12px 0 8px;
+  color: #f5f8fb;
+  font-size: clamp(21px, 2vw, 27px);
+  line-height: 1.2;
+}
+
+.destination-country {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b5c5d0;
+  font-size: 12px;
+}
+
+.destination-country svg {
+  color: #61e8aa;
+  flex: 0 0 auto;
+}
+
+.destination-divider {
+  height: 1px;
+  margin: 18px 0;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.destination-story {
+  margin: 0 0 18px;
+  color: #c6d2df;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.destination-coordinates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.destination-coordinates div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.destination-coordinates span {
+  color: #839b9e;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+}
+
+.destination-coordinates strong {
+  color: #e5f3ed;
+  font-size: 11px;
+}
+
+.destination-return {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(93, 232, 166, 0.45);
+  border-radius: 8px;
+  color: #70eeb4;
+  background: rgba(61, 211, 145, 0.1);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  cursor: pointer;
+}
+
+/* The page itself never scrolls. Only the sidebar content may scroll. */
+.demo-note {
+  transition: opacity 0.3s ease;
+}
+
+.discovery-mode .demo-note {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .discovery-mode .wheel-container {
+    left: 10px;
+    top: 10px;
+    transform: scale(0.31);
+  }
+
+  .destination-panel {
+    width: min(340px, 40vw);
+    top: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .destination-panel-content {
+    padding: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app {
+    grid-template-rows: 65px minmax(0, 1fr) 48px;
+  }
+
+  .topbar {
+    height: 65px;
+    min-height: 65px;
+  }
+
+  .bottom-bar {
+    height: 48px;
+    min-height: 48px;
+  }
+
+  .discovery-mode .wheel-container {
+    left: 7px;
+    top: 7px;
+    transform: scale(0.25);
+  }
+
+  .destination-panel {
+    width: min(300px, 52vw);
+    max-width: calc(100% - 16px);
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .destination-panel-photo {
+    flex-basis: 120px;
+    min-height: 120px;
+  }
+
+  .destination-panel-content {
+    padding: 12px;
+  }
+
+  .destination-panel-content h2 {
+    font-size: 18px;
+  }
+
+  .destination-story {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  .destination-coordinates {
+    grid-template-columns: 1fr;
+  }
+
+  .destination-return {
+    font-size: 8px;
+    padding: 9px 5px;
+  }
+}
+
+
+/*
+  WORLDSPIN discovery-mode transition update
+  Append this entire file to the BOTTOM of src/App.css.
+  It intentionally overrides the earlier discovery-layout rules.
+*/
+
+/* Fixed single-screen application: the map remains the main surface. */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app {
+  position: relative;
+  display: grid;
+  grid-template-rows: 76px minmax(0, 1fr) 58px;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: #030711;
+}
+
+.world-map {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: #030711;
+}
+
+.maplibre-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-overlay,
+.map-vignette,
+.map-grid {
+  pointer-events: none;
+}
+
+.topbar {
+  position: relative;
+  z-index: 30;
+  height: 76px;
+  min-height: 76px;
+}
+
+.main-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bottom-bar {
+  position: relative;
+  z-index: 30;
+  height: 58px;
+  min-height: 58px;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+/*
+  Overview -> discovery:
+  these transitions begin as soon as MapView calls onFocusStart,
+  at the same time as the map camera begins moving.
+*/
+.intro {
+  transition:
+    opacity 0.72s ease,
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.72s;
+  will-change: opacity, transform;
+}
+
+.wheel-container {
+  transform-origin: center center;
+  transition:
+    left 1.05s cubic-bezier(0.22, 1, 0.36, 1),
+    top 1.05s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.05s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.9s ease,
+    filter 0.9s ease;
+  will-change: left, top, transform, opacity;
+}
+
+/* Keep caption transitions active in both directions. */
+.wheel-label,
+.wheel-bottom {
+  transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
+.discovery-mode .intro {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(55px, -10px, 0);
+}
+
+/*
+  Keep the same center transform origin in both modes. This avoids
+  the jump caused by switching from a centered transform to top-left.
+*/
+.discovery-mode .wheel-container {
+  position: absolute;
+  left: 68px;
+  top: 68px;
+  width: 340px;
+  transform: translate(-50%, -50%) scale(0.34);
+  transform-origin: center center;
+  opacity: 0.88;
+  z-index: 45;
+  cursor: pointer;
+  filter: drop-shadow(0 0 18px rgba(72, 232, 158, 0.35));
+}
+
+.discovery-mode .wheel-container:hover {
+  transform: translate(-50%, -50%) scale(0.37);
+  opacity: 1;
+}
+
+/* Fade the wheel caption out without changing its layout during the move. */
+.discovery-mode .wheel-label {
+  display: flex;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.discovery-mode .wheel-bottom {
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.discovery-mode .wheel-container .spin-button {
+  font-size: 9px;
+  padding: 7px 12px;
+}
+
+.discovery-mode .wheel-graphic {
+  cursor: pointer;
+}
+
+.discovery-mode .wheel-graphic:focus-visible {
+  outline: 2px solid #63e6a9;
+  outline-offset: 6px;
+  border-radius: 50%;
+}
+
+/* Destination sidebar enters while the camera is zooming. */
+.destination-panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  width: min(360px, 30vw);
+  max-width: calc(100% - 24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 25;
+  border: 1px solid rgba(89, 229, 165, 0.38);
+  border-radius: 14px;
+  background: rgba(4, 15, 25, 0.96);
+  box-shadow:
+    0 15px 55px rgba(0, 0, 0, 0.45),
+    0 0 25px rgba(40, 220, 140, 0.08);
+  backdrop-filter: blur(20px);
+  animation: worldspinSidebarEnter 0.78s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes worldspinSidebarEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(38px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Reverse the sidebar at the same time as the zoom-out camera move. */
+.returning-mode .destination-panel {
+  pointer-events: none;
+  animation: worldspinSidebarExit 0.72s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes worldspinSidebarExit {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(38px, 0, 0);
+  }
+}
+
+.destination-close {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(3, 10, 18, 0.78);
+  cursor: pointer;
+}
+
+.destination-close:disabled,
+.destination-return:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.destination-panel-photo {
+  position: relative;
+  flex: 0 0 clamp(145px, 23vh, 205px);
+  width: 100%;
+  min-height: 145px;
+  overflow: hidden;
+  background: #10252d;
+}
+
+.destination-panel-photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.destination-photo-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(3, 10, 18, 0.85), transparent 65%);
+  pointer-events: none;
+}
+
+.destination-photo-label {
+  position: absolute;
+  left: 17px;
+  bottom: 15px;
+  color: #79efb7;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+
+.destination-panel-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 19px;
+  scrollbar-width: thin;
+  scrollbar-color: #28664f transparent;
+}
+
+.destination-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #63e9aa;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+}
+
+.destination-panel-content h2 {
+  margin: 12px 0 8px;
+  color: #f5f8fb;
+  font-size: clamp(21px, 2vw, 27px);
+  line-height: 1.2;
+}
+
+.destination-country {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #b5c5d0;
+  font-size: 12px;
+}
+
+.destination-country svg {
+  color: #61e8aa;
+  flex: 0 0 auto;
+}
+
+.destination-divider {
+  height: 1px;
+  margin: 18px 0;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.destination-story {
+  margin: 0 0 18px;
+  color: #c6d2df;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.destination-coordinates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.destination-coordinates div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.destination-coordinates span {
+  color: #839b9e;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+}
+
+.destination-coordinates strong {
+  color: #e5f3ed;
+  font-size: 11px;
+}
+
+.destination-return {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(93, 232, 166, 0.45);
+  border-radius: 8px;
+  color: #70eeb4;
+  background: rgba(61, 211, 145, 0.1);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  cursor: pointer;
+}
+
+.destination-return:hover {
+  background: rgba(61, 211, 145, 0.2);
+}
+
+.demo-note {
+  transition: opacity 0.3s ease;
+}
+
+.discovery-mode .demo-note,
+.returning-mode .demo-note {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Reverse wheel/headline transitions run concurrently with the zoom-out. */
+.returning-mode .intro {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0);
+}
+
+.returning-mode .wheel-container {
+  opacity: 1;
+  filter: none;
+}
+
+@media (max-width: 900px) {
+  .discovery-mode .wheel-container {
+    left: 58px;
+    top: 58px;
+    transform: translate(-50%, -50%) scale(0.3);
+  }
+
+  .discovery-mode .wheel-container:hover {
+    transform: translate(-50%, -50%) scale(0.33);
+  }
+
+  .destination-panel {
+    width: min(340px, 40vw);
+    top: 10px;
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .destination-panel-content {
+    padding: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app {
+    grid-template-rows: 65px minmax(0, 1fr) 48px;
+  }
+
+  .topbar {
+    height: 65px;
+    min-height: 65px;
+  }
+
+  .bottom-bar {
+    height: 48px;
+    min-height: 48px;
+  }
+
+  .discovery-mode .wheel-container {
+    left: 49px;
+    top: 49px;
+    transform: translate(-50%, -50%) scale(0.25);
+  }
+
+  .discovery-mode .wheel-container:hover {
+    transform: translate(-50%, -50%) scale(0.27);
+  }
+
+  .destination-panel {
+    width: min(300px, 52vw);
+    max-width: calc(100% - 16px);
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .destination-panel-photo {
+    flex-basis: 120px;
+    min-height: 120px;
+  }
+
+  .destination-panel-content {
+    padding: 12px;
+  }
+
+  .destination-panel-content h2 {
+    font-size: 18px;
+  }
+
+  .destination-story {
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  .destination-coordinates {
+    grid-template-columns: 1fr;
+  }
+
+  .destination-return {
+    font-size: 8px;
+    padding: 9px 5px;
+  }
+}
+
+
+/* ========================================
+   WORLDSPIN - REFINED OVERVIEW DESIGN
+======================================== */
+
+/* Smaller wheel positioned over Atlantic */
+
+.app:not(.discovery-mode) .wheel-container {
+  left: 42%;
+  top: 56%;
+  width: 300px;
+  transform: translate(-50%, -50%);
+}
+
+.app:not(.discovery-mode) .wheel-outer {
+  width: 260px;
+  height: 260px;
+}
+
+.app:not(.discovery-mode) .wheel-center {
+  width: 116px;
+  height: 116px;
+}
+
+/* Smaller, balanced heading */
+
+.intro h2 {
+  font-size: clamp(28px, 2.4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: 2px;
+}
+
+.intro p {
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.wheel-label {
+  font-size: 8px;
+  letter-spacing: 1.6px;
+}
+
+.wheel-bottom {
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+
+/* Smaller floating wheel during discovery */
+
+.discovery-mode .wheel-container {
+  transform: scale(.30);
+  opacity: .82;
+}
+
+.discovery-mode .wheel-container:hover {
+  transform: scale(.33);
+  opacity: 1;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 900px) {
+  .app:not(.discovery-mode) .wheel-container {
+    left: 50%;
+    top: 59%;
+  }
+
+  .app:not(.discovery-mode) .wheel-outer {
+    width: 235px;
+    height: 235px;
+  }
+
+  .app:not(.discovery-mode) .wheel-center {
+    width: 108px;
+    height: 108px;
+  }
+}
+
+@media (max-width: 600px) {
+  .intro h2 {
+    font-size: 30px;
+  }
+
+  .intro p {
+    font-size: 11px;
+  }
+}
+
+
+
+/* WORLDSPIN - SMALLER ATLANTIC WHEEL */
+
+.app:not(.discovery-mode) .wheel-container {
+  left: 42%;
+  top: 56%;
+  width: 300px;
+  transform: translate(-50%, -50%);
+}
+
+.app:not(.discovery-mode) .wheel-outer {
+  width: 260px;
+  height: 260px;
+}
+
+.app:not(.discovery-mode) .wheel-center {
+  width: 116px;
+  height: 116px;
+}
+
+.intro h2 {
+  font-size: clamp(28px, 2.4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: 2px;
+}
+
+.intro p {
+  font-size: 12px;
+}
+
+.eyebrow {
+  font-size: 9px;
+}
+
+.wheel-label {
+  font-size: 8px;
+}

@@ -2200,3 +2200,195 @@ body,
 .wheel-label {
   font-size: 8px;
 }
+
+
+/* =====================================
+   WORLDSPIN - MAJOR WHEEL SIZE REFINEMENT
+===================================== */
+
+/* Desktop overview wheel */
+
+.app:not(.discovery-mode) .wheel-container {
+  left: 40%;
+  top: 56%;
+  width: 270px;
+  transform: translate(-50%, -50%);
+}
+
+/* Actual wheel dimensions */
+
+.app:not(.discovery-mode) .wheel-outer {
+  width: 210px;
+  height: 210px;
+}
+
+/* Smaller centre */
+
+.app:not(.discovery-mode) .wheel-center {
+  width: 94px;
+  height: 94px;
+}
+
+/* Centre number */
+
+.app:not(.discovery-mode) .center-number {
+  font-size: 26px;
+}
+
+/* Centre caption */
+
+.app:not(.discovery-mode) .center-caption {
+  font-size: 7px;
+  margin: 2px 0 7px;
+}
+
+/* Smaller spin button */
+
+.app:not(.discovery-mode) .spin-button {
+  padding: 7px 12px;
+  font-size: 9px;
+  gap: 4px;
+}
+
+.app:not(.discovery-mode) .spin-button svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Smaller pointer */
+
+.app:not(.discovery-mode) .wheel-pointer {
+  border-left-width: 9px;
+  border-right-width: 9px;
+  border-top-width: 19px;
+}
+
+/* Wheel labels */
+
+.app:not(.discovery-mode) .wheel-label {
+  font-size: 7.5px;
+  letter-spacing: 1.3px;
+  margin-bottom: 11px;
+}
+
+.app:not(.discovery-mode) .wheel-bottom {
+  font-size: 7px;
+  margin-top: 13px;
+}
+
+/* Smaller heading */
+
+.intro h2 {
+  font-size: clamp(26px, 2.1vw, 36px);
+  letter-spacing: 1.7px;
+}
+
+.intro p {
+  font-size: 11px;
+}
+
+.eyebrow {
+  font-size: 8px;
+  letter-spacing: 1.7px;
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .app:not(.discovery-mode) .wheel-container {
+    left: 50%;
+    top: 58%;
+  }
+
+  .app:not(.discovery-mode) .wheel-outer {
+    width: 190px;
+    height: 190px;
+  }
+
+  .app:not(.discovery-mode) .wheel-center {
+    width: 86px;
+    height: 86px;
+  }
+
+  .app:not(.discovery-mode) .center-number {
+    font-size: 23px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .app:not(.discovery-mode) .wheel-container {
+    left: 50%;
+    top: 59%;
+  }
+
+  .app:not(.discovery-mode) .wheel-outer {
+    width: 175px;
+    height: 175px;
+  }
+
+  .app:not(.discovery-mode) .wheel-center {
+    width: 80px;
+    height: 80px;
+  }
+
+  .app:not(.discovery-mode) .center-number {
+    font-size: 21px;
+  }
+}
+
+
+
+/* WORLDSPIN DAY / NIGHT MAP SWITCH */
+
+.map-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px;
+  border: 1px solid rgba(105, 231, 175, 0.25);
+  border-radius: 30px;
+  background: rgba(5, 17, 26, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+.map-mode-toggle button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 13px;
+  border: none;
+  border-radius: 24px;
+  background: transparent;
+  color: #a9bac5;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.map-mode-toggle button.active {
+  background: linear-gradient(135deg, #62eab0, #24bd83);
+  color: #041b13;
+  box-shadow: 0 0 14px rgba(72, 232, 158, 0.2);
+}
+
+.map-mode-toggle button:hover {
+  color: #ffffff;
+}
+
+.map-mode-toggle button.active:hover {
+  color: #041b13;
+}
+
+@media (max-width: 600px) {
+  .map-mode-toggle button {
+    padding: 8px;
+    font-size: 9px;
+    gap: 3px;
+  }
+}
+

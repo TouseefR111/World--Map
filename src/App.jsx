@@ -10,6 +10,8 @@ import {
   VolumeX,
   Sparkles,
   X,
+  Sun,
+  Moon,
 } from "lucide-react";
 import "./App.css";
 
@@ -193,6 +195,7 @@ function App() {
   const [returningToWorld, setReturningToWorld] = useState(false);
   const [history, setHistory] = useState([]);
   const [sound, setSound] = useState(false);
+  const [mapMode, setMapMode] = useState("day");
 
   // Begin the return animation in parallel with the map zoom-out.
   // Keep the destination panel mounted until MapView reports moveend.
@@ -326,6 +329,7 @@ function App() {
           onFocusComplete={handleFocusComplete}
           returnToOverview={returningToWorld}
           onReturnComplete={handleReturnComplete}
+          mapMode={mapMode}
         />
         <div className="map-overlay" />
         <div className="map-vignette" />
@@ -350,6 +354,30 @@ function App() {
             <span />
             GLOBAL EXPERIENCE
           </div>
+
+          <div className="map-mode-toggle" role="group" aria-label="Map appearance">
+            <button
+              type="button"
+              className={mapMode === "day" ? "active" : ""}
+              onClick={() => setMapMode("day")}
+              aria-pressed={mapMode === "day"}
+              title="Daytime satellite map"
+            >
+              <Sun size={15} />
+              DAY
+            </button>
+            <button
+              type="button"
+              className={mapMode === "night" ? "active" : ""}
+              onClick={() => setMapMode("night")}
+              aria-pressed={mapMode === "night"}
+              title="Nighttime satellite map"
+            >
+              <Moon size={15} />
+              NIGHT
+            </button>
+          </div>
+
           <button
             className="sound-button"
             onClick={() => setSound((value) => !value)}

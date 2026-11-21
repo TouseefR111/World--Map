@@ -16,9 +16,11 @@ import "./MapView.css";
 const INITIAL_CENTER = [-25, 18];
 const INITIAL_ZOOM = 1.35;
 
-// Slightly longer camera moves create a calmer, more cinematic feel.
 const FOCUS_DURATION = 6200;
 const RETURN_DURATION = 5200;
+
+const DAY_LAYER_ID = "eox-day-layer";
+const NIGHT_LAYER_ID = "nasa-black-marble-layer";
 
 setWorkerUrl(workerUrl);
 
@@ -112,6 +114,7 @@ function MapView({
   onFocusComplete,
   returnToOverview = false,
   onReturnComplete,
+  mapMode = "day",
 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -123,31 +126,32 @@ function MapView({
   const focusCompleteRef = useRef(onFocusComplete);
   const returnCompleteRef = useRef(onReturnComplete);
   const returnToOverviewRef = useRef(returnToOverview);
+  const mapModeRef = useRef(mapMode);
 
   const focusDestinationRef = useRef(null);
   const returnToOverviewActionRef = useRef(null);
   const cameraEndHandlerRef = useRef(null);
 
-  // Keep refs current for MapLibre callbacks without rebuilding the map.
+  // Keep the latest props available to MapLibre callbacks without rebuilding the map.
   destinationRef.current = selectedDestination;
   focusStartRef.current = onFocusStart;
   focusCompleteRef.current = onFocusComplete;
   returnCompleteRef.current = onReturnComplete;
   returnToOverviewRef.current = returnToOverview;
+  mapModeRef.current = mapMode;
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return undefined;
 
     const map = new MapLibreMap({
-        maxTileCacheZoomLevels: 8,
-
-cancelPendingTileRequestsWhileZooming: false,
       container: containerRef.current,
       style: "https://tiles.openfreemap.org/styles/dark",
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
       minZoom: 1,
       maxZoom: 14,
+      maxTileCacheZoomLevels: 8,
+      cancelPendingTileRequestsWhileZooming: false,
       attributionControl: { compact: true },
       dragRotate: false,
       pitchWithRotate: false,
@@ -164,42 +168,106 @@ cancelPendingTileRequestsWhileZooming: false,
     };
 
     // ==================================
-    // NASA NIGHTTIME IMAGERY
+    // DAY / NIGHT IMAGERY SOURCES
     // ==================================
 
-    const addNightImagery = () => {
-      if (map.getSource("nasa-black-marble")) return;
-
-      map.addSource("nasa-black-marble", {
-        type: "raster",
-        tiles: [
-          "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png",
-        ],
-        tileSize: 256,
-        minzoom: 0,
-        maxzoom: 8,
-        attribution: "NASA GIBS - VIIRS Black Marble (2016)",
-      });
-
-      const firstSymbolLayer = map
+    const getImageryInsertionPoint = () => {
+      // Keep the imagery above land/water fill layers but below roads and labels.
+      const firstOverlayLayer = map
         .getStyle()
-        .layers.find((layer) => layer.type === "symbol");
+        .layers.find((layer) => layer.type === "line" || layer.type === "symbol");
 
-      const imageryLayer = {
-        id: "nasa-black-marble-layer",
-        type: "raster",
-        source: "nasa-black-marble",
-       paint: {
-  "raster-opacity": 0.76,
-  "raster-fade-duration": 250
-}
-      };
+      return firstOverlayLayer?.id;
+    };
 
-      // Place imagery below labels so names remain legible.
-      if (firstSymbolLayer) {
-        map.addLayer(imageryLayer, firstSymbolLayer.id);
+    const addLayerBelowOverlays = (layer) => {
+      const beforeId = getImageryInsertionPoint();
+
+      if (beforeId) {
+        map.addLayer(layer, beforeId);
       } else {
-        map.addLayer(imageryLayer);
+        map.addLayer(layer);
+      }
+    };
+
+    const addImageryLayers = () => {
+      // DAY: EOxCloudless Sentinel-2 global mosaic (2016).
+      if (!map.getSource("eox-day-source")) {
+        map.addSource("eox-day-source", {
+          type: "raster",
+          tiles: [
+            "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg",
+          ],
+          tileSize: 256,
+          minzoom: 0,
+          maxzoom: 13,
+          attribution:
+            "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017)",
+        });
+      }
+
+      if (!map.getLayer(DAY_LAYER_ID)) {
+        addLayerBelowOverlays({
+          id: DAY_LAYER_ID,
+          type: "raster",
+          source: "eox-day-source",
+          layout: {
+            visibility: mapModeRef.current === "day" ? "visible" : "none",
+          },
+          paint: {
+            "raster-opacity": 1,
+            "raster-fade-duration": 250,
+          },
+        });
+      }
+
+      // NIGHT: NASA VIIRS Black Marble nighttime lights (2016 composite).
+      if (!map.getSource("nasa-black-marble")) {
+        map.addSource("nasa-black-marble", {
+          type: "raster",
+          tiles: [
+            "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png",
+          ],
+          tileSize: 256,
+          minzoom: 0,
+          maxzoom: 8,
+          attribution: "NASA GIBS - VIIRS Black Marble (2016)",
+        });
+      }
+
+      if (!map.getLayer(NIGHT_LAYER_ID)) {
+        addLayerBelowOverlays({
+          id: NIGHT_LAYER_ID,
+          type: "raster",
+          source: "nasa-black-marble",
+          layout: {
+            visibility: mapModeRef.current === "night" ? "visible" : "none",
+          },
+          paint: {
+            "raster-opacity": 0.9,
+            "raster-fade-duration": 250,
+          },
+        });
+      }
+
+      applyMapMode(mapModeRef.current);
+    };
+
+    const applyMapMode = (mode) => {
+      if (map.getLayer(DAY_LAYER_ID)) {
+        map.setLayoutProperty(
+          DAY_LAYER_ID,
+          "visibility",
+          mode === "day" ? "visible" : "none"
+        );
+      }
+
+      if (map.getLayer(NIGHT_LAYER_ID)) {
+        map.setLayoutProperty(
+          NIGHT_LAYER_ID,
+          "visibility",
+          mode === "night" ? "visible" : "none"
+        );
       }
     };
 
@@ -252,9 +320,7 @@ cancelPendingTileRequestsWhileZooming: false,
       cancelPendingCameraEnd();
       map.stop();
 
-      // IMPORTANT: start the UI transition immediately, before camera movement.
-      // React will shrink the wheel, hide the headline and reveal the sidebar
-      // while MapLibre is animating the camera.
+      // Start the wheel, headline and sidebar transitions with the camera animation.
       focusStartRef.current?.(destination);
 
       const handleFocusMoveEnd = () => {
@@ -349,11 +415,12 @@ cancelPendingTileRequestsWhileZooming: false,
     const handleMapLoad = () => {
       if (mapRef.current !== map) return;
 
-      // Imagery failure should not prevent the base map from working.
+      // Satellite providers are independent. Failure of one should not
+      // prevent the other mode or the vector map from remaining available.
       try {
-        addNightImagery();
+        addImageryLayers();
       } catch (error) {
-        console.error("Night imagery setup failed:", error);
+        console.error("Map imagery setup failed:", error);
       }
 
       mapLoadedRef.current = true;
@@ -397,6 +464,28 @@ cancelPendingTileRequestsWhileZooming: false,
     };
   }, []);
 
+  // Switch only the raster layer visibility; do not recreate the map or move the camera.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoadedRef.current) return;
+
+    if (map.getLayer(DAY_LAYER_ID)) {
+      map.setLayoutProperty(
+        DAY_LAYER_ID,
+        "visibility",
+        mapMode === "day" ? "visible" : "none"
+      );
+    }
+
+    if (map.getLayer(NIGHT_LAYER_ID)) {
+      map.setLayoutProperty(
+        NIGHT_LAYER_ID,
+        "visibility",
+        mapMode === "night" ? "visible" : "none"
+      );
+    }
+  }, [mapMode]);
+
   // React state drives map camera movement.
   useEffect(() => {
     const map = mapRef.current;
@@ -416,7 +505,7 @@ cancelPendingTileRequestsWhileZooming: false,
     <div
       ref={containerRef}
       className="maplibre-canvas"
-      aria-label="Interactive nighttime world map"
+      aria-label={`Interactive ${mapMode} world map`}
     />
   );
 }

@@ -1,3 +1,8 @@
+.map-view-shell {
+  position: absolute;
+  inset: 0;
+}
+
 .maplibre-canvas {
   position: absolute;
   inset: 0;
@@ -7,12 +12,61 @@
   cursor: grab;
 }
 
+.map-loading-status {
+  position: absolute;
+  z-index: 40;
+  top: 16px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100% - 32px);
+  padding: 9px 13px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(139, 232, 189, 0.28);
+  border-radius: 999px;
+  background: rgba(3, 11, 22, 0.84);
+  color: #e5fff3;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.32);
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+}
+
+.map-loading-spinner {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 2px solid rgba(139, 232, 189, 0.3);
+  border-top-color: #8be8bd;
+  border-radius: 50%;
+  animation: mapLoadingSpin 0.8s linear infinite;
+}
+
+@keyframes mapLoadingSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-loading-spinner {
+    animation: none;
+  }
+
+  .map-destination-marker .marker-beacon,
+  .greenland-dot {
+    animation: none;
+  }
+}
+
 .maplibre-canvas:active {
   cursor: grabbing;
 }
 
 .maplibre-canvas .maplibregl-canvas {
   outline: none;
+  filter: brightness(1.06) contrast(1) saturate(1);
 }
 
 /* ========================================
@@ -256,7 +310,11 @@
 }
 
 .greenland-popup-header {
-  padding: 16px 18px 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 52px 16px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
   flex-shrink: 0;
@@ -266,7 +324,6 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
 }
 
 .greenland-popup-badge {
@@ -286,22 +343,10 @@
   color: #ff9c52;
 }
 
-.greenland-popup-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.greenland-popup-title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  color: #f4f7fb;
-}
-
 .greenland-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
   width: 26px;
   height: 26px;
   border-radius: 8px;
@@ -359,20 +404,3 @@
   font-weight: 500;
 }
 
-.greenland-popup-body::-webkit-scrollbar {
-  width: 5px;
-}
-
-.greenland-popup-body::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 4px;
-}
-
-.greenland-popup-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 126, 41, 0.45);
-  border-radius: 4px;
-}
-
-.greenland-popup-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 126, 41, 0.75);
-}

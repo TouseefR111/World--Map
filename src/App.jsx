@@ -303,7 +303,7 @@ function App() {
     const text = `Explore Destination #${result.number}: ${title}, ${result.country}!`;
 
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(`${text} — Discovered on WorldSpin`);
+      navigator.clipboard.writeText(`${text} — Discovered on Flankhub`);
       setToastMessage("LINK COPIED TO CLIPBOARD!");
       setTimeout(() => setToastMessage(""), 2800);
     }
@@ -361,7 +361,7 @@ function App() {
           </div>
           <div>
             <h1>
-              WORLD<span>SPIN</span>
+              Flank<span>hub</span>
             </h1>
             <p>100 CURATED GLOBAL DESTINATIONS</p>
           </div>
@@ -370,7 +370,7 @@ function App() {
         <div className="header-right">
           <div className="live-indicator">
             <span />
-            MAPTILER 3D TERRAIN
+            Who we following today, Spin it
           </div>
 
           <div className="map-mode-toggle" role="group" aria-label="Map appearance">
@@ -431,23 +431,6 @@ function App() {
 
       {/* Main interactive area */}
       <section className="main-content">
-        <div className="intro">
-          <div className="eyebrow">
-            <Sparkles size={14} />
-            100 HISTORIC & GLOBAL POINTS
-          </div>
-          <h2>
-            LET THE WORLD
-            <br />
-            <span>CHOOSE YOU.</span>
-          </h2>
-          <p>
-            One spin. One destination. One unexpected story.
-            <br />
-            Explore 100 historical, cultural, and geopolitical wonders across the globe.
-          </p>
-        </div>
-
         {/* Wheel container */}
         <div
           className={`wheel-container ${discoveryMode ? "wheel-return-control" : ""}`}
@@ -814,7 +797,7 @@ function App() {
       <footer className="bottom-bar">
         <div className="footer-item">
           <Globe2 size={17} />
-          <span>MAPTILER 3D</span>
+          <span>FLANKHUB</span>
         </div>
         <div className="footer-item">
           <MapPin size={17} />
@@ -870,7 +853,7 @@ function App() {
       />
 
       <div className="demo-note">
-        POWERED BY MAPTILER 3D TERRAIN · 100 VERIFIED DESTINATIONS · ADMIN READY
+        POWERED BY FLANKHUB · 100 VERIFIED DESTINATIONS ·
       </div>
     </main>
   );

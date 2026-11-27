@@ -247,7 +247,7 @@ export default function AdminModal({
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(destinations, null, 2));
     const dlAnchor = document.createElement("a");
     dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", `worldspin_destinations_${new Date().toISOString().slice(0, 10)}.json`);
+    dlAnchor.setAttribute("download", `flankhub_destinations_${new Date().toISOString().slice(0, 10)}.json`);
     document.body.appendChild(dlAnchor);
     dlAnchor.click();
     dlAnchor.remove();

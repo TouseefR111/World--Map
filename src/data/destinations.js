@@ -1,5 +1,5 @@
 // 100 Verified Global Destinations Dataset
-// Coordinates provided by client. Editorial stories & curated recommendations for WorldSpin.
+// Coordinates provided by client. Editorial stories and curated recommendations for Flankhub.
 
 export const defaultDestinations = [
   {

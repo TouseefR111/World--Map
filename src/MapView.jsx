@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Map as MapLibreMap,
   Marker,
@@ -31,6 +31,8 @@ const INITIAL_BEARING = 0;
 // Camera timing — snappier than 6 s / 5 s previous values
 const FOCUS_DURATION  = 4800;
 const RETURN_DURATION = 4000;
+const MIN_FOCUS_DURATION = 1300;
+const MAP_SLOW_THRESHOLD = 4500;
 
 setWorkerUrl(workerUrl);
 
@@ -109,6 +111,19 @@ function getSidePanelPadding() {
   return 420;
 }
 
+function prefersReducedMotion() {
+  return typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
+}
+
+function getFlightDuration(distanceMeters, fallbackDuration = FOCUS_DURATION) {
+  if (prefersReducedMotion()) return 0;
+  if (!Number.isFinite(distanceMeters)) return fallbackDuration;
+
+  const distanceDuration = MIN_FOCUS_DURATION + Math.log1p(distanceMeters / 1000) * 520;
+  return Math.round(Math.min(fallbackDuration, Math.max(MIN_FOCUS_DURATION, distanceDuration)));
+}
+
 // ========================================
 // GREENLAND PERMANENT MARKER
 // ========================================
@@ -120,22 +135,19 @@ function createGreenlandMarker(map) {
   el.className = "greenland-dot";
   el.setAttribute("role", "button");
   el.setAttribute("tabindex", "0");
-  el.setAttribute("aria-label", "The Spaceship Perspective — Greenland");
+  el.setAttribute("aria-label", "Greenland location marker");
 
   const popup = document.createElement("div");
   popup.className = "greenland-popup";
   popup.setAttribute("role", "dialog");
-  popup.setAttribute("aria-label", "The Spaceship Perspective");
+  popup.setAttribute("aria-label", "Greenland coordinates");
   popup.innerHTML = `
     <div class="greenland-popup-header">
       <div class="greenland-popup-meta">
         <span class="greenland-popup-badge"></span>
         <span class="greenland-popup-coords">GREENLAND · 71.71°N, 42.60°W</span>
       </div>
-      <div class="greenland-popup-title-row">
-        <h3 class="greenland-popup-title">The Spaceship Perspective</h3>
-        <button type="button" class="greenland-popup-close" aria-label="Close popup">&times;</button>
-      </div>
+      <button type="button" class="greenland-popup-close" aria-label="Close popup">&times;</button>
     </div>
     <div class="greenland-popup-body">
       <p>Imagine being in a spaceship visiting earth for the first time, searching for the most advanced city on the planet. The only relevant question to ask would be when and where?</p>
@@ -287,6 +299,31 @@ function applyTerrain(map) {
   }
 }
 
+// Hide only symbol layers dedicated to country names. Label layers remain in
+// the vector style, so this changes rendering without requesting different tiles.
+function hideCountryNameLayers(map) {
+  try {
+    const layers = map.getStyle()?.layers ?? [];
+    for (const layer of layers) {
+      if (layer.type !== "symbol" || !layer.layout?.["text-field"]) continue;
+
+      const layerId = layer.id.toLowerCase();
+      const sourceLayer = (layer["source-layer"] ?? "").toLowerCase();
+      const filterText = JSON.stringify(layer.filter ?? []).toLowerCase();
+      const isCountryLabel =
+        /country/.test(layerId) ||
+        /country|admin[-_]?0/.test(sourceLayer) ||
+        (sourceLayer === "place" && /class.{0,24}country|country.{0,24}class/.test(filterText));
+
+      if (isCountryLabel && layer.layout.visibility !== "none") {
+        map.setLayoutProperty(layer.id, "visibility", "none");
+      }
+    }
+  } catch (error) {
+    console.warn("Could not hide country labels:", error?.message ?? error);
+  }
+}
+
 // ========================================
 // MAP COMPONENT
 // ========================================
@@ -299,6 +336,7 @@ function MapView({
   onReturnComplete,
   mapMode = "day",
 }) {
+  const [mapStatus, setMapStatus] = useState("loading");
   const containerRef  = useRef(null);
   const mapRef        = useRef(null);
   const markerRef     = useRef(null);
@@ -311,6 +349,11 @@ function MapView({
   const returnCompleteRef   = useRef(onReturnComplete);
   const returnToOverviewRef = useRef(returnToOverview);
   const mapModeRef          = useRef(mapMode);
+  const styleModeRef        = useRef(mapMode);
+  const requestedStyleModeRef = useRef(mapMode);
+  const styleRequestRef     = useRef(0);
+  const mapStatusTimerRef   = useRef(null);
+  const switchStyleRef      = useRef(null);
 
   const focusDestinationRef        = useRef(null);
   const returnToOverviewActionRef  = useRef(null);
@@ -350,11 +393,9 @@ function MapView({
       maxZoom:   20,
 
       // ── PERFORMANCE SETTINGS ──────────────────────────────────────
-      // Drop in-flight tile requests as soon as the camera moves, so
-      // the queue never backs up during fast zoom gestures.
-      cancelPendingTileRequestsWhileZooming: true,
-      // Smaller cache = less memory churn; enough to avoid re-fetching
-      // tiles at zoom levels just visited.
+      // Retain lower-zoom tiles as a visual fallback while detail tiles load.
+      cancelPendingTileRequestsWhileZooming: false,
+      // Retain nearby zoom levels to reduce refetching during camera flights.
       maxTileCacheZoomLevels: 6,
       // MapLibre 3-D terrain overdraw optimisation
       optimizeForTerrain: true,
@@ -375,6 +416,45 @@ function MapView({
     });
 
     mapRef.current = map;
+    styleModeRef.current = mapModeRef.current;
+    requestedStyleModeRef.current = mapModeRef.current;
+
+    const setMapLoading = () => {
+      setMapStatus("loading");
+      if (mapStatusTimerRef.current) clearTimeout(mapStatusTimerRef.current);
+      mapStatusTimerRef.current = setTimeout(() => {
+        if (mapRef.current === map) setMapStatus("slow");
+      }, MAP_SLOW_THRESHOLD);
+    };
+
+    const handleMapIdle = () => {
+      if (mapStatusTimerRef.current) {
+        clearTimeout(mapStatusTimerRef.current);
+        mapStatusTimerRef.current = null;
+      }
+      setMapStatus("ready");
+    };
+    setMapLoading();
+
+    const requestStyle = (mode) => {
+      if (mode === requestedStyleModeRef.current) return;
+      requestedStyleModeRef.current = mode;
+      const requestId = ++styleRequestRef.current;
+      const targetStyle = mode === "night" ? NIGHT_STYLE : DAY_STYLE;
+      setMapLoading();
+
+      const handleStyleLoad = () => {
+        map.off("style.load", handleStyleLoad);
+        if (mapRef.current !== map || requestId !== styleRequestRef.current) return;
+        styleModeRef.current = mode;
+        applyTerrain(map);
+        hideCountryNameLayers(map);
+      };
+
+      map.on("style.load", handleStyleLoad);
+      map.setStyle(targetStyle);
+    };
+    switchStyleRef.current = requestStyle;
 
     map.addControl(
       new NavigationControl({ visualizePitch: true, showCompass: true, showZoom: true }),
@@ -456,16 +536,16 @@ function MapView({
       const targetZoom    = destination.zoom    || getDestinationZoom(destination);
       const targetPitch   = destination.pitch   ?? 54;
       const targetBearing = destination.bearing ?? 26;
+      const duration = getFlightDuration(map.getCenter().distanceTo(coordinates));
 
       const animationOptions = {
-        duration: FOCUS_DURATION,
+        duration,
         curve:    1.1,       // was 1.32 — softer arc = less roller-coaster feeling
-        speed:    0.8,       // cap velocity so tiles can keep up
         easing:   easeInOutCubic,
         pitch:    targetPitch,
         bearing:  targetBearing,
         padding,
-        essential: true,
+        essential: duration > 0,
       };
 
       if (isValidBounds(destination.bounds)) {
@@ -501,11 +581,14 @@ function MapView({
         zoom:     INITIAL_ZOOM,
         pitch:    INITIAL_PITCH,
         bearing:  INITIAL_BEARING,
-        duration: RETURN_DURATION,
+        duration: getFlightDuration(
+          map.getCenter().distanceTo(INITIAL_CENTER),
+          RETURN_DURATION
+        ),
         curve:    1.1,       // was 1.25
         easing:   easeInOutCubic,
         padding:  { top: 0, right: 0, bottom: 0, left: 0 },
-        essential: true,
+        essential: !prefersReducedMotion(),
       });
     };
 
@@ -519,10 +602,16 @@ function MapView({
     const handleMapLoad = () => {
       if (mapRef.current !== map) return;
 
-      applyTerrain(map);
       cleanupGreenland = createGreenlandMarker(map);
 
       mapLoadedRef.current = true;
+
+      if (mapModeRef.current !== styleModeRef.current) {
+        requestStyle(mapModeRef.current);
+      } else {
+        applyTerrain(map);
+        hideCountryNameLayers(map);
+      }
 
       if (returnToOverviewRef.current) {
         returnToOverviewAction();
@@ -537,6 +626,8 @@ function MapView({
 
     map.on("load",  handleMapLoad);
     map.on("error", handleMapError);
+    map.on("movestart", setMapLoading);
+    map.on("idle", handleMapIdle);
 
     return () => {
       cancelPendingCameraEnd();
@@ -545,6 +636,12 @@ function MapView({
       map.stop();
       map.off("load",  handleMapLoad);
       map.off("error", handleMapError);
+      map.off("movestart", setMapLoading);
+      map.off("idle", handleMapIdle);
+      if (mapStatusTimerRef.current) {
+        clearTimeout(mapStatusTimerRef.current);
+        mapStatusTimerRef.current = null;
+      }
 
       if (markerRef.current) {
         markerRef.current.remove();
@@ -554,6 +651,7 @@ function MapView({
       mapLoadedRef.current              = false;
       focusDestinationRef.current       = null;
       returnToOverviewActionRef.current = null;
+      switchStyleRef.current = null;
 
       map.remove();
       mapRef.current = null;
@@ -561,28 +659,10 @@ function MapView({
   }, []);
 
   // ── Night / Day style switch ─────────────────────────────────────────────
-  // Uses map.setStyle() to swap the ENTIRE style (not an overlay).
-  // After the style loads, terrain is re-applied because setStyle wipes all
-  // user-added sources and layers.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapLoadedRef.current) return;
-
-    const targetStyle = mapMode === "night" ? NIGHT_STYLE : DAY_STYLE;
-
-    // Avoid unnecessary reload if already on the right style
-    const currentStyleUrl = map.getStyle()?.sprite?.replace("/sprite", "") ?? "";
-    const alreadyNight    = currentStyleUrl.includes("streets-v2-dark");
-    const alreadyDay      = currentStyleUrl.includes("hybrid");
-
-    if (mapMode === "night" && alreadyNight) return;
-    if (mapMode === "day"   && alreadyDay)   return;
-
-    // setStyle replaces everything — re-apply terrain once styledata fires
-    map.setStyle(targetStyle);
-    map.once("styledata", () => {
-      applyTerrain(map);
-    });
+    switchStyleRef.current?.(mapMode);
   }, [mapMode]);
 
   // ── Destination / return triggers ────────────────────────────────────────
@@ -601,11 +681,19 @@ function MapView({
   }, [selectedDestination, returnToOverview]);
 
   return (
-    <div
-      ref={containerRef}
-      className="maplibre-canvas"
-      aria-label={`WorldSpin 3D ${mapMode} Map`}
-    />
+    <div className="map-view-shell">
+      <div
+        ref={containerRef}
+        className="maplibre-canvas"
+        aria-label={`Flankhub 3D ${mapMode} map`}
+      />
+      {mapStatus !== "ready" && (
+        <div className="map-loading-status" role="status" aria-live="polite">
+          <span className="map-loading-spinner" aria-hidden="true" />
+          {mapStatus === "slow" ? "Map is still loading…" : "Loading map details…"}
+        </div>
+      )}
+    </div>
   );
 }
 

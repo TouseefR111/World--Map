@@ -177,7 +177,8 @@ service cloud.firestore {
       allow update: if isAdmin() &&
         isValidDestination(destId, request.resource.data) &&
         areImmutableFieldsUnchanged(['number']);
-      allow delete: if isAdmin();
+      // The admin UI edits destinations but has no delete workflow.
+      allow delete: if false;
     }
 
     // Admin allowlist: signed-in user may check only their own admin record; no list or client writes

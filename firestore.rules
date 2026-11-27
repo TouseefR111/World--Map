@@ -1,0 +1,194 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: destinations
+// Document ID: string(number) — e.g., "1", "22", "100"
+// Fields:
+//   - id: string (required, 1..100 chars) - URL slug identifier (e.g., "kidepo-valley")
+//   - number: int (required, immutable, 1..1000, must match string(number) == destId) - wheel number
+//   - name: string (required, 1..150 chars) - destination display title
+//   - city: string (required, 1..150 chars) - city or region name
+//   - country: string (required, 1..150 chars) - country name
+//   - type: string (required, in ['city', 'region', 'country', 'landmark']) - destination category
+//   - lat: number (required, -90..90) - latitude
+//   - lon: number (required, -180..180) - longitude
+//   - zoom: number (required, 0..24) - 3D map zoom level
+//   - pitch: number (required, 0..90) - 3D camera pitch angle
+//   - bearing: number (required, -360..360) - 3D camera bearing
+//   - story: string (required, 1..4000 chars) - curated editorial story
+//   - badge: string (required, 0..80 chars) - badge label
+//   - accent: string (required, regex ^#[0-9a-fA-F]{6}$) - hex theme color
+//   - timezone: string (optional, 1..80 chars) - IANA timezone identifier
+//   - temp: string (optional, 0..80 chars) - summary climate/temperature string
+//   - highlights: list (optional, max 10 strings of 1..100 chars each) - key highlights
+//   - recommendations: map (optional, keys only ['eat', 'stay', 'visit']) - field guide items
+//       each sub-map requires keys ['title', 'note', 'url']:
+//         - title: string (0..150 chars)
+//         - note: string (0..400 chars)
+//         - url: string (0..500 chars, "" or http(s)://...)
+//
+// Collection: admins
+// Document ID: Firebase Auth UID ({uid})
+// Purpose: Server/console-provisioned admin allowlist. Client writes are always denied.
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the request comes from an authenticated Firebase Auth user
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the authenticated user matches the document's UID
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if the authenticated user is a verified administrator via custom claim
+    // or an admin allowlist document in /admins/{uid}
+    function isAdmin() {
+      return isAuthenticated() && (
+        ('admin' in request.auth.token && request.auth.token.admin == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Validate required fields exist on the incoming document
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Validate that the incoming document contains only allowed fields
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // Ensure immutable fields are not modified on update
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Validate HTTP/HTTPS URL format
+    function isValidUrl(url) {
+      return url is string &&
+        (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+
+    // Validate a single highlight string at index idx (safe short-circuiting)
+    function isValidHighlightItem(list, idx) {
+      return list.size() <= idx ||
+        (list[idx] is string && list[idx].size() >= 1 && list[idx].size() <= 100);
+    }
+
+    // Validate highlights array (type, max 10 items, every element validated)
+    function isValidHighlights(list) {
+      return list is list &&
+        list.size() <= 10 &&
+        isValidHighlightItem(list, 0) &&
+        isValidHighlightItem(list, 1) &&
+        isValidHighlightItem(list, 2) &&
+        isValidHighlightItem(list, 3) &&
+        isValidHighlightItem(list, 4) &&
+        isValidHighlightItem(list, 5) &&
+        isValidHighlightItem(list, 6) &&
+        isValidHighlightItem(list, 7) &&
+        isValidHighlightItem(list, 8) &&
+        isValidHighlightItem(list, 9);
+    }
+
+    // Validate a single recommendation entry ({ title, note, url })
+    function isValidRecommendationItem(item) {
+      return item is map &&
+        item.keys().hasOnly(['title', 'note', 'url']) &&
+        item.keys().hasAll(['title', 'note', 'url']) &&
+        item.title is string && item.title.size() <= 150 &&
+        item.note is string && item.note.size() <= 400 &&
+        item.url is string && item.url.size() <= 500 &&
+        (item.url == "" || isValidUrl(item.url));
+    }
+
+    // Validate the recommendations map ({ eat, stay, visit })
+    function isValidRecommendations(recs) {
+      return recs is map &&
+        recs.keys().hasOnly(['eat', 'stay', 'visit']) &&
+        (!('eat' in recs) || isValidRecommendationItem(recs.eat)) &&
+        (!('stay' in recs) || isValidRecommendationItem(recs.stay)) &&
+        (!('visit' in recs) || isValidRecommendationItem(recs.visit));
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    // Validate complete /destinations/{destId} document shape, types, ranges, and sizes
+    function isValidDestination(destId, data) {
+      let allowedKeys = [
+        'id', 'number', 'name', 'city', 'country', 'type',
+        'lat', 'lon', 'zoom', 'pitch', 'bearing',
+        'story', 'badge', 'accent',
+        'timezone', 'temp', 'highlights', 'recommendations'
+      ];
+      let requiredKeys = [
+        'id', 'number', 'name', 'city', 'country', 'type',
+        'lat', 'lon', 'zoom', 'pitch', 'bearing',
+        'story', 'badge', 'accent'
+      ];
+
+      return hasOnlyAllowedFields(allowedKeys) &&
+        hasRequiredFields(requiredKeys) &&
+        data.id is string && data.id.size() >= 1 && data.id.size() <= 100 &&
+        data.number is int && data.number >= 1 && data.number <= 1000 &&
+        destId == string(data.number) &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 150 &&
+        data.city is string && data.city.size() >= 1 && data.city.size() <= 150 &&
+        data.country is string && data.country.size() >= 1 && data.country.size() <= 150 &&
+        data.type is string && data.type in ['city', 'region', 'country', 'landmark'] &&
+        data.lat is number && data.lat >= -90 && data.lat <= 90 &&
+        data.lon is number && data.lon >= -180 && data.lon <= 180 &&
+        data.zoom is number && data.zoom >= 0 && data.zoom <= 24 &&
+        data.pitch is number && data.pitch >= 0 && data.pitch <= 90 &&
+        data.bearing is number && data.bearing >= -360 && data.bearing <= 360 &&
+        data.story is string && data.story.size() >= 1 && data.story.size() <= 4000 &&
+        data.badge is string && data.badge.size() <= 80 &&
+        data.accent is string && data.accent.matches("^#[0-9a-fA-F]{6}$") &&
+        (!('timezone' in data) || (data.timezone is string && data.timezone.size() >= 1 && data.timezone.size() <= 80)) &&
+        (!('temp' in data) || (data.temp is string && data.temp.size() <= 80)) &&
+        (!('highlights' in data) || isValidHighlights(data.highlights)) &&
+        (!('recommendations' in data) || isValidRecommendations(data.recommendations));
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Public destination catalog: readable by all visitors, writable only by verified admins
+    match /destinations/{destId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidDestination(destId, request.resource.data);
+      allow update: if isAdmin() &&
+        isValidDestination(destId, request.resource.data) &&
+        areImmutableFieldsUnchanged(['number']);
+      allow delete: if isAdmin();
+    }
+
+    // Admin allowlist: signed-in user may check only their own admin record; no list or client writes
+    match /admins/{uid} {
+      allow get: if isOwner(uid);
+      allow list, write: if false;
+    }
+
+    // Default deny all other collections and subcollections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

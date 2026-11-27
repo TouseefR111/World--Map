@@ -1,101 +1,38 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import MapView from "./MapView";
 import {
   Globe2,
   MapPin,
   History,
-  Info,
   Volume2,
   VolumeX,
   Sparkles,
-  X,
   Sun,
   Moon,
+  Clock,
+  Share2,
+  Maximize2,
+  Minimize2,
+  Check,
+  Sliders,
+  Utensils,
+  BedDouble,
+  Compass,
+  ArrowUpRight,
 } from "lucide-react";
+import {
+  playTick,
+  playWhoosh,
+  playArrivalChime,
+  playButtonTap,
+} from "./utils/soundEffects";
+import defaultDestinations from "./data/destinations";
+import { loadDestinations } from "./firebase";
+import AdminModal from "./AdminModal";
 import "./App.css";
 
-// Temporary sample records. The data shape supports cities, regions and countries.
-// The 100 wheel numbers currently map to these five demo records until Firebase is connected.
-const destinations = [
-  {
-    id: "paris",
-    number: 0,
-    name: "Paris",
-    city: "Paris",
-    country: "France",
-    type: "city",
-    lon: 2.3522,
-    lat: 48.8566,
-    zoom: 8.5,
-    image:
-      "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1200&q=85",
-    story:
-      "Paris is a historic European capital celebrated for its architecture, art, fashion and cuisine. From the Eiffel Tower and the Louvre to its neighbourhoods and café culture, the city combines centuries of history with modern urban life.",
-  },
-  {
-    id: "tokyo",
-    number: 0,
-    name: "Tokyo",
-    city: "Tokyo",
-    country: "Japan",
-    type: "city",
-    lon: 139.6917,
-    lat: 35.6895,
-    zoom: 8.5,
-    image:
-      "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=85",
-    story:
-      "Tokyo blends ancient Japanese traditions with advanced technology. Its famous districts, historic temples, exceptional food culture and efficient transport make it one of the world's most fascinating metropolitan areas.",
-  },
-  {
-    id: "new-york",
-    number: 0,
-    name: "New York",
-    city: "New York",
-    country: "United States",
-    type: "city",
-    lon: -74.006,
-    lat: 40.7128,
-    zoom: 8.5,
-    image:
-      "https://images.unsplash.com/photo-1518391846015-55a9cc003b25?auto=format&fit=crop&w=1200&q=85",
-    story:
-      "New York is an international centre of finance, culture and creativity. Its iconic skyline, diverse neighbourhoods, Broadway theatres, museums and Central Park give the city a distinctive energy.",
-  },
-  {
-    id: "rio-de-janeiro",
-    number: 0,
-    name: "Rio de Janeiro",
-    city: "Rio de Janeiro",
-    country: "Brazil",
-    type: "city",
-    lon: -43.1729,
-    lat: -22.9068,
-    zoom: 8.5,
-    image:
-      "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1200&q=85",
-    story:
-      "Rio de Janeiro combines dramatic mountains, tropical beaches and vibrant Brazilian culture. Its famous landmarks include Christ the Redeemer, Sugarloaf Mountain and Copacabana Beach.",
-  },
-  {
-    id: "cape-town",
-    number: 0,
-    name: "Cape Town",
-    city: "Cape Town",
-    country: "South Africa",
-    type: "city",
-    lon: 18.4241,
-    lat: -33.9249,
-    zoom: 8.5,
-    image:
-      "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=1200&q=85",
-    story:
-      "Cape Town is famous for its spectacular coastal scenery, Table Mountain, beaches and cultural diversity. Its history, natural environment and nearby wine regions make it a remarkable destination.",
-  },
-];
-
-// Wheel geometry.
+// Wheel geometry
 const SEGMENT_COUNT = 100;
 const WHEEL_CENTER = 160;
 const OUTER_RADIUS = 153;
@@ -156,7 +93,7 @@ function getDestinationDescription(destination) {
     case "region":
       return "REGION DISCOVERY";
     default:
-      return "CITY DISCOVERY";
+      return "GLOBAL LANDMARK";
   }
 }
 
@@ -167,7 +104,7 @@ function getDestinationSubtitle(destination) {
     case "region":
       return `Region · ${destination.country || "Unknown country"}`;
     default:
-      return destination?.country || "";
+      return destination?.country ? `${destination.city ? destination.city + ", " : ""}${destination.country}` : "";
   }
 }
 
@@ -182,10 +119,27 @@ function getCoordinate(destination, key) {
   );
 }
 
+function getDestinationTime(destination) {
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: destination?.timezone || "UTC",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(new Date());
+  } catch {
+    return null;
+  }
+}
+
 function App() {
   const wheelRef = useRef(null);
   const rotationRef = useRef(0);
   const spinTweenRef = useRef(null);
+
+  // Dynamic 100 destinations state (backed by Firebase Firestore & LocalStorage)
+  const [destinations, setDestinations] = useState(defaultDestinations);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   const [spinning, setSpinning] = useState(false);
   const [winnerIndex, setWinnerIndex] = useState(null);
@@ -197,14 +151,32 @@ function App() {
   const [sound, setSound] = useState(false);
   const [mapMode, setMapMode] = useState("day");
 
-  // Begin the return animation in parallel with the map zoom-out.
-  // Keep the destination panel mounted until MapView reports moveend.
+  // Interactive HUD state
+  const [cardMinimized, setCardMinimized] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const soundRef = useRef(sound);
+
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
+
+  // Load custom / cloud-synced destinations on mount
+  useEffect(() => {
+    loadDestinations(defaultDestinations).then((loaded) => {
+      if (loaded && loaded.length > 0) {
+        setDestinations(loaded);
+      }
+    });
+  }, []);
+
   const returnToWorld = () => {
     if (!result || returningToWorld || !discoveryMode || mapTransitioning) return;
 
     setReturningToWorld(true);
     setMapTransitioning(true);
     setDiscoveryMode(false);
+    setCardMinimized(false);
   };
 
   const handleReturnComplete = () => {
@@ -213,10 +185,9 @@ function App() {
     setDiscoveryMode(false);
     setMapTransitioning(false);
     setReturningToWorld(false);
+    setCardMinimized(false);
   };
 
-  // Called at the start of MapLibre's flyTo/fitBounds movement.
-  // UI animations therefore run concurrently with the camera movement.
   const handleFocusStart = (destination) => {
     if (!destination || returningToWorld) return;
 
@@ -230,7 +201,6 @@ function App() {
     }
   };
 
-  // Called on MapLibre moveend. Tiles may continue loading in the background.
   const handleFocusComplete = (destination) => {
     if (!destination || returningToWorld) return;
 
@@ -240,11 +210,13 @@ function App() {
       result.number === destination.number
     ) {
       setMapTransitioning(false);
+      if (soundRef.current) {
+        playArrivalChime();
+      }
     }
   };
 
   const spinWheel = () => {
-    // A new spin is only allowed from the global overview.
     if (
       spinning ||
       returningToWorld ||
@@ -255,17 +227,23 @@ function App() {
       return;
     }
 
+    if (soundRef.current) {
+      playButtonTap();
+    }
+
     const outcomeIndex = Math.floor(Math.random() * SEGMENT_COUNT);
     const outcomeNumber = outcomeIndex + 1;
 
-    // Temporary demo mapping: 100 numbers cycle through five locations.
-    const destination = destinations[outcomeIndex % destinations.length];
+    // Direct 1:1 mapping from 100 wheel segments to the 100 curated destinations
+    const matchedDestination =
+      destinations.find((d) => d.number === outcomeNumber) ||
+      destinations[outcomeIndex % destinations.length];
+
     const selectedDestination = {
-      ...destination,
+      ...matchedDestination,
       number: outcomeNumber,
     };
 
-    // Align the centre of the selected segment with the fixed top pointer.
     const centerAngle = (outcomeIndex + 0.5) * SEGMENT_ANGLE;
     const desiredRotation = (360 - centerAngle + 360) % 360;
     const currentRotation = rotationRef.current;
@@ -278,25 +256,64 @@ function App() {
     setMapTransitioning(false);
     setReturningToWorld(false);
     setWinnerIndex(null);
+    setCardMinimized(false);
     setSpinning(true);
+
+    let lastSegmentPassed = -1;
 
     spinTweenRef.current = gsap.to(wheelRef.current, {
       rotation: targetRotation,
       duration: 6,
       ease: "power4.out",
       transformOrigin: "50% 50%",
+      onUpdate: () => {
+        const currentRot = gsap.getProperty(wheelRef.current, "rotation") || 0;
+        const currentSegment = Math.floor(currentRot / SEGMENT_ANGLE);
+        if (currentSegment !== lastSegmentPassed) {
+          lastSegmentPassed = currentSegment;
+          if (soundRef.current) {
+            playTick();
+          }
+        }
+      },
       onComplete: () => {
         rotationRef.current = targetRotation;
         setWinnerIndex(outcomeIndex);
         setResult(selectedDestination);
+        setCardMinimized(false);
         setHistory((previous) => [selectedDestination, ...previous].slice(0, 5));
         setSpinning(false);
         spinTweenRef.current = null;
+        if (soundRef.current) {
+          playWhoosh();
+        }
       },
       onInterrupt: () => {
         spinTweenRef.current = null;
         setSpinning(false);
       },
+    });
+  };
+
+  const handleShare = () => {
+    if (!result) return;
+    if (soundRef.current) playButtonTap();
+
+    const title = getDestinationTitle(result);
+    const text = `Explore Destination #${result.number}: ${title}, ${result.country}!`;
+
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(`${text} — Discovered on WorldSpin`);
+      setToastMessage("LINK COPIED TO CLIPBOARD!");
+      setTimeout(() => setToastMessage(""), 2800);
+    }
+  };
+
+  const toggleSound = () => {
+    setSound((prev) => {
+      const next = !prev;
+      if (next) playButtonTap();
+      return next;
     });
   };
 
@@ -321,7 +338,7 @@ function App() {
         returningToWorld ? "returning-mode" : ""
       }`}
     >
-      {/* Full-screen interactive map background. */}
+      {/* Full-screen commercial MapTiler 3D Satellite Map */}
       <div className="world-map">
         <MapView
           selectedDestination={result}
@@ -336,6 +353,7 @@ function App() {
         <div className="map-grid" />
       </div>
 
+      {/* Header */}
       <header className="topbar">
         <div className="brand">
           <div className="brand-icon">
@@ -345,23 +363,26 @@ function App() {
             <h1>
               WORLD<span>SPIN</span>
             </h1>
-            <p>EXPLORE THE UNEXPECTED</p>
+            <p>100 CURATED GLOBAL DESTINATIONS</p>
           </div>
         </div>
 
         <div className="header-right">
           <div className="live-indicator">
             <span />
-            GLOBAL EXPERIENCE
+            MAPTILER 3D TERRAIN
           </div>
 
           <div className="map-mode-toggle" role="group" aria-label="Map appearance">
             <button
               type="button"
               className={mapMode === "day" ? "active" : ""}
-              onClick={() => setMapMode("day")}
+              onClick={() => {
+                if (soundRef.current) playButtonTap();
+                setMapMode("day");
+              }}
               aria-pressed={mapMode === "day"}
-              title="Daytime satellite map"
+              title="Daytime high-res MapTiler 3D satellite"
             >
               <Sun size={15} />
               DAY
@@ -369,9 +390,12 @@ function App() {
             <button
               type="button"
               className={mapMode === "night" ? "active" : ""}
-              onClick={() => setMapMode("night")}
+              onClick={() => {
+                if (soundRef.current) playButtonTap();
+                setMapMode("night");
+              }}
               aria-pressed={mapMode === "night"}
-              title="Nighttime satellite map"
+              title="Nighttime lights satellite map"
             >
               <Moon size={15} />
               NIGHT
@@ -380,21 +404,37 @@ function App() {
 
           <button
             className="sound-button"
-            onClick={() => setSound((value) => !value)}
-            aria-label={sound ? "Mute sound" : "Enable sound"}
+            onClick={toggleSound}
+            aria-label={sound ? "Mute audio sound effects" : "Enable tactile sound effects"}
             aria-pressed={sound}
             type="button"
+            title={sound ? "Sound Enabled" : "Sound Muted"}
           >
-            {sound ? <Volume2 /> : <VolumeX />}
+            {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+          </button>
+
+          {/* Client Admin Panel Toggle */}
+          <button
+            className="admin-header-btn"
+            onClick={() => {
+              if (soundRef.current) playButtonTap();
+              setIsAdminOpen(true);
+            }}
+            title="Open Destination Admin Panel"
+            type="button"
+          >
+            <Sliders size={15} />
+            <span>ADMIN</span>
           </button>
         </div>
       </header>
 
+      {/* Main interactive area */}
       <section className="main-content">
         <div className="intro">
           <div className="eyebrow">
             <Sparkles size={14} />
-            YOUR NEXT DESTINATION AWAITS
+            100 HISTORIC & GLOBAL POINTS
           </div>
           <h2>
             LET THE WORLD
@@ -404,21 +444,22 @@ function App() {
           <p>
             One spin. One destination. One unexpected story.
             <br />
-            Discover somewhere extraordinary.
+            Explore 100 historical, cultural, and geopolitical wonders across the globe.
           </p>
         </div>
 
-        {/* In discovery mode, clicking anywhere on the compact wheel returns to the world. */}
+        {/* Wheel container */}
         <div
           className={`wheel-container ${discoveryMode ? "wheel-return-control" : ""}`}
         >
           <div className="wheel-label">
             <span className="label-line" />
-            100 POSSIBLE DESTINATIONS
+            100 GLOBAL DESTINATIONS
             <span className="label-line" />
           </div>
 
-          <div className="wheel-pointer" />
+          {/* Needle flapper with physics bounce while ticking */}
+          <div className={`wheel-pointer ${spinning ? "is-ticking" : ""}`} />
 
           <div className="wheel-outer">
             <div className="wheel-ring" />
@@ -514,7 +555,7 @@ function App() {
                   "RETURNING..."
                 ) : discoveryMode ? (
                   mapTransitioning ? (
-                    "ZOOMING..."
+                    "FLYING..."
                   ) : (
                     <>
                       <Globe2 size={14} />
@@ -524,7 +565,7 @@ function App() {
                 ) : spinning ? (
                   "SPINNING..."
                 ) : result ? (
-                  "ZOOMING..."
+                  "FLYING..."
                 ) : (
                   <>
                     <Sparkles size={16} />
@@ -541,100 +582,255 @@ function App() {
               : returningToWorld
                 ? "RETURNING TO GLOBAL VIEW..."
                 : discoveryMode
-                  ? mapTransitioning ? "EXPLORING DESTINATION..." : "RETURN TO GLOBAL VIEW"
+                  ? mapTransitioning ? "FLYING TO DESTINATION..." : "CLICK TO RETURN TO WORLD"
                   : result
                   ? "DESTINATION DISCOVERED"
                   : "READY TO DISCOVER?"}
           </div>
         </div>
 
-        {/* This stays inside the map screen; it never becomes a separate page. */}
+        {/* Destination Panel or Minimized Live Map HUD */}
         {result && (discoveryMode || returningToWorld) && (
-          <aside className="destination-panel" aria-label="Selected destination information">
-            <button
-              className="destination-close"
-              type="button"
-              onClick={returnToWorld}
-              disabled={returningToWorld || mapTransitioning}
-              aria-label="Zoom out to global map"
-              title="Back to global view"
-            >
-              <span aria-hidden="true">×</span>
-            </button>
-
-            <div className="destination-panel-photo">
-              {result.image ? (
-                <img
-                  src={result.image}
-                  alt={getDestinationTitle(result)}
-                  loading="eager"
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
+          cardMinimized ? (
+            <div className="map-minimized-hud" role="region" aria-label="Minimized destination card">
+              <div className="minimized-pill-info">
+                <MapPin size={15} style={{ color: result.accent || "#54efa8" }} />
+                <span className="minimized-number">#{result.number}</span>
+                <span className="minimized-name">{getDestinationTitle(result)}</span>
+                <span className="minimized-country">· {result.country}</span>
+              </div>
+              <div className="minimized-actions">
+                <button
+                  type="button"
+                  className="minimized-btn primary"
+                  onClick={() => {
+                    if (soundRef.current) playButtonTap();
+                    setCardMinimized(false);
                   }}
-                />
-              ) : null}
-              <div className="destination-photo-overlay" />
-              <div className="destination-photo-label">
-                DESTINATION #{result.number}
+                  title="Open destination story & details"
+                >
+                  <Maximize2 size={13} />
+                  DETAILS
+                </button>
+                <button
+                  type="button"
+                  className="minimized-btn secondary"
+                  onClick={() => {
+                    if (soundRef.current) playButtonTap();
+                    returnToWorld();
+                  }}
+                  title="Return to global view"
+                >
+                  <Globe2 size={13} />
+                  RETURN
+                </button>
               </div>
             </div>
-
-            <div className="destination-panel-content">
-              <div className="destination-type">
-                <Sparkles size={13} />
-                {getDestinationDescription(result)}
-              </div>
-
-              <h2>{getDestinationTitle(result)}</h2>
-
-              <div className="destination-country">
-                <MapPin size={15} />
-                {getDestinationSubtitle(result)}
-              </div>
-
-              <div className="destination-divider" />
-
-              <p className="destination-story">{result.story}</p>
-
-              {Number.isFinite(selectedLatitude) && Number.isFinite(selectedLongitude) && (
-                <div className="destination-coordinates">
-                  <div>
-                    <span>LATITUDE</span>
-                    <strong>{selectedLatitude.toFixed(4)}°</strong>
-                  </div>
-                  <div>
-                    <span>LONGITUDE</span>
-                    <strong>{selectedLongitude.toFixed(4)}°</strong>
-                  </div>
+          ) : (
+            <aside
+              className="destination-panel destination-panel-textonly"
+              aria-label="Selected destination information"
+              style={{ "--dest-accent": result.accent || "#54efa8" }}
+            >
+              <div className="destination-panel-header">
+                <div className="destination-panel-badges">
+                  <span
+                    className="destination-num-badge"
+                    style={{ background: result.accent || "#54efa8" }}
+                  >
+                    #{result.number}
+                  </span>
+                  {result.badge && (
+                    <span className="destination-editorial-badge">
+                      <Sparkles size={11} />
+                      {result.badge}
+                    </span>
+                  )}
                 </div>
-              )}
+                <div className="destination-panel-top-actions">
+                  <button
+                    className="dest-action-pill"
+                    type="button"
+                    onClick={() => {
+                      if (soundRef.current) playButtonTap();
+                      setCardMinimized(true);
+                    }}
+                    title="Minimize card to explore full 3D MapTiler terrain freely"
+                  >
+                    <Minimize2 size={13} />
+                    <span>ROAM MAP</span>
+                  </button>
+                  <button
+                    className="dest-action-pill"
+                    type="button"
+                    onClick={handleShare}
+                    title="Share this destination"
+                  >
+                    <Share2 size={13} />
+                    <span>SHARE</span>
+                  </button>
+                  <button
+                    className="destination-close"
+                    type="button"
+                    onClick={() => {
+                      if (soundRef.current) playButtonTap();
+                      returnToWorld();
+                    }}
+                    disabled={returningToWorld || mapTransitioning}
+                    aria-label="Zoom out to global map"
+                    title="Back to global view"
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+              </div>
 
-              <button
-                className="destination-return"
-                type="button"
-                onClick={returnToWorld}
-                disabled={returningToWorld || mapTransitioning}
-              >
-                <Globe2 size={16} />
-                {returningToWorld ? "RETURNING TO WORLD..." : "BACK TO THE WORLD"}
-              </button>
-            </div>
-          </aside>
+              <div className="destination-panel-content">
+                <div className="destination-type" style={{ color: result.accent || "#54efa8" }}>
+                  <Sparkles size={13} />
+                  {getDestinationDescription(result)}
+                </div>
+
+                <h2>{getDestinationTitle(result)}</h2>
+
+                <div className="destination-country">
+                  <MapPin size={15} />
+                  {getDestinationSubtitle(result)}
+                </div>
+
+                {/* Live Telemetry & Local Time */}
+                <div className="destination-telemetry-bar">
+                  {getDestinationTime(result) && (
+                    <div className="telemetry-pill">
+                      <Clock size={12} />
+                      <span>LOCAL TIME <strong>{getDestinationTime(result)}</strong></span>
+                    </div>
+                  )}
+                  {result.temp && (
+                    <div className="telemetry-pill">
+                      <Sun size={12} />
+                      <span>{result.temp}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="destination-divider" />
+
+                <div className="destination-section-label">LOCATION STORY</div>
+                <p className="destination-story">{result.story}</p>
+
+                {/* Curated Field Guide: Where to Eat, Stay & Must Visit */}
+                {result.recommendations && (
+                  <div className="destination-guide">
+                    <div className="destination-section-label">CURATED FIELD GUIDE</div>
+                    <div className="destination-guide-list">
+                      {[
+                        { key: "eat", label: "WHERE TO EAT", Icon: Utensils },
+                        { key: "stay", label: "WHERE TO STAY", Icon: BedDouble },
+                        { key: "visit", label: "MUST VISIT", Icon: Compass },
+                      ].map(({ key, label, Icon }) => {
+                        const rec = result.recommendations?.[key];
+                        if (!rec?.title && !rec?.note) return null;
+                        return (
+                          <div key={key} className="guide-card">
+                            <div className="guide-card-top">
+                              <span className="guide-category">
+                                <Icon size={12} />
+                                {label}
+                              </span>
+                              {rec.url && (
+                                <a
+                                  href={rec.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer sponsored"
+                                  className="guide-affiliate-link"
+                                >
+                                  <span>EXPLORE</span>
+                                  <ArrowUpRight size={12} />
+                                </a>
+                              )}
+                            </div>
+                            {rec.title && <div className="guide-title">{rec.title}</div>}
+                            {rec.note && <p className="guide-note">{rec.note}</p>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Key Highlights */}
+                {result.highlights && result.highlights.length > 0 && (
+                  <div className="destination-highlights">
+                    <div className="highlights-title">KEY HIGHLIGHTS:</div>
+                    <div className="highlights-tags">
+                      {result.highlights.map((highlight) => (
+                        <span key={highlight} className="highlight-tag">
+                          {highlight}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {Number.isFinite(selectedLatitude) && Number.isFinite(selectedLongitude) && (
+                  <div className="destination-coordinates">
+                    <div>
+                      <span>LATITUDE</span>
+                      <strong>{selectedLatitude.toFixed(4)}°</strong>
+                    </div>
+                    <div>
+                      <span>LONGITUDE</span>
+                      <strong>{selectedLongitude.toFixed(4)}°</strong>
+                    </div>
+                    <div>
+                      <span>PERSPECTIVE</span>
+                      <strong>3D TERRAIN</strong>
+                    </div>
+                  </div>
+                )}
+
+                <div className="destination-button-group">
+                  <button
+                    className="destination-return"
+                    type="button"
+                    onClick={() => {
+                      if (soundRef.current) playButtonTap();
+                      returnToWorld();
+                    }}
+                    disabled={returningToWorld || mapTransitioning}
+                  >
+                    <Globe2 size={16} />
+                    {returningToWorld ? "RETURNING TO WORLD..." : "BACK TO GLOBAL MAP"}
+                  </button>
+                </div>
+              </div>
+            </aside>
+          )
         )}
       </section>
 
+      {/* Bottom Bar */}
       <footer className="bottom-bar">
         <div className="footer-item">
           <Globe2 size={17} />
-          <span>ONE WORLD</span>
+          <span>MAPTILER 3D</span>
         </div>
         <div className="footer-item">
           <MapPin size={17} />
           <span>100 DESTINATIONS</span>
         </div>
-        <div className="footer-item">
-          <Info size={17} />
-          <span>DISCOVER SOMETHING NEW</span>
+        <div
+          className="footer-item"
+          onClick={() => {
+            if (soundRef.current) playButtonTap();
+            setIsAdminOpen(true);
+          }}
+          style={{ cursor: "pointer" }}
+          title="Open Destination Admin Panel"
+        >
+          <Sliders size={15} />
+          <span>ADMIN DASHBOARD</span>
         </div>
         <div className="history-area">
           <History size={16} />
@@ -651,8 +847,30 @@ function App() {
         </div>
       </footer>
 
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="toast-notice" role="status" aria-live="polite">
+          <Check size={14} />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Destination Admin Panel Modal */}
+      <AdminModal
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+        destinations={destinations}
+        onUpdateDestinations={(updatedList) => {
+          setDestinations(updatedList);
+        }}
+        onPreviewDestination={(dest) => {
+          setResult(dest);
+          setDiscoveryMode(true);
+        }}
+      />
+
       <div className="demo-note">
-        PROTOTYPE · 100 SEGMENTS · 5 SAMPLE LOCATIONS
+        POWERED BY MAPTILER 3D TERRAIN · 100 VERIFIED DESTINATIONS · ADMIN READY
       </div>
     </main>
   );

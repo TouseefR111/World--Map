@@ -2392,3 +2392,1151 @@ body,
   }
 }
 
+
+
+/* =========================================
+   WORLDSPIN - FINAL LAYOUT REFINEMENT
+========================================= */
+
+/* OVERVIEW: INTRO TEXT AT BOTTOM RIGHT */
+
+.app:not(.discovery-mode) .intro {
+  position: absolute !important;
+
+  top: auto !important;
+  left: auto !important;
+
+  right: 28px !important;
+  bottom: 62px !important;
+
+  width: min(410px, 35vw) !important;
+  max-width: calc(100% - 40px) !important;
+
+  transform: none !important;
+
+  text-align: right !important;
+
+  z-index: 6;
+}
+
+.app:not(.discovery-mode) .eyebrow {
+  justify-content: flex-end;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+
+.app:not(.discovery-mode) .intro h2 {
+  font-size: clamp(25px, 2.1vw, 36px);
+  line-height: 1.1;
+  letter-spacing: 1.5px;
+  margin: 9px 0;
+}
+
+.app:not(.discovery-mode) .intro p {
+  font-size: 11px;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+/* OVERVIEW: WHEEL REMAINS ON ATLANTIC */
+
+.app:not(.discovery-mode) .wheel-container {
+  left: 40% !important;
+  top: 56% !important;
+  width: 270px !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+/* DISCOVERY: WHEEL SHRINKS INTO CORNER */
+
+.app.discovery-mode .wheel-container {
+  position: absolute !important;
+
+  left: 90px !important;
+  top: 85px !important;
+
+  width: 270px !important;
+
+  transform: translate(-50%, -50%) scale(.44) !important;
+
+  transform-origin: center center !important;
+
+  opacity: .88;
+  z-index: 50;
+
+  cursor: pointer;
+
+  transition:
+    left 1s cubic-bezier(.22, 1, .36, 1),
+    top 1s cubic-bezier(.22, 1, .36, 1),
+    transform 1s cubic-bezier(.22, 1, .36, 1),
+    opacity .8s ease,
+    filter .8s ease;
+}
+
+.app.discovery-mode .wheel-container:hover {
+  transform: translate(-50%, -50%) scale(.47) !important;
+  opacity: 1;
+}
+
+.app.discovery-mode .wheel-label,
+.app.discovery-mode .wheel-bottom {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Keep discovery map visible */
+
+.app.discovery-mode .intro {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Smooth return animation */
+
+.app.returning-mode .intro {
+  opacity: 1;
+  visibility: visible;
+  transform: none !important;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .app:not(.discovery-mode) .intro {
+    right: 16px !important;
+    bottom: 35px !important;
+    width: 330px !important;
+  }
+
+  .app.discovery-mode .wheel-container {
+    left: 76px !important;
+    top: 72px !important;
+    transform: translate(-50%, -50%) scale(.42) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .app:not(.discovery-mode) .intro {
+    right: 12px !important;
+    left: 12px !important;
+    bottom: 28px !important;
+    width: auto !important;
+    text-align: center !important;
+  }
+
+  .app:not(.discovery-mode) .eyebrow {
+    justify-content: center;
+  }
+
+  .app:not(.discovery-mode) .intro h2 {
+    font-size: 23px;
+  }
+
+  .app.discovery-mode .wheel-container {
+    left: 65px !important;
+    top: 65px !important;
+    transform: translate(-50%, -50%) scale(.35) !important;
+  }
+}
+
+
+
+/* ==========================================
+   WORLDSPIN - CINEMATIC NAVIGATION DESIGN
+========================================== */
+
+/* 1. ATLANTIC WHEEL POSITION */
+
+.app:not(.discovery-mode) .wheel-container {
+  left: 47.5% !important;
+  top: 55% !important;
+
+  width: 340px !important;
+
+  transform: translate(-50%, -50%) scale(.82) !important;
+
+  transform-origin: center center !important;
+
+  isolation: isolate;
+
+  z-index: 10;
+}
+
+/* Soft atmospheric background behind wheel */
+
+.app:not(.discovery-mode) .wheel-container::before {
+  content: "";
+
+  position: absolute;
+
+  width: 350px;
+  height: 350px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(4, 25, 36, .44) 0%,
+      rgba(4, 22, 33, .23) 48%,
+      rgba(15, 100, 80, .08) 65%,
+      transparent 76%
+    );
+
+  border: 1px solid rgba(93, 232, 166, .12);
+
+  box-shadow:
+    0 0 45px rgba(35, 215, 145, .09),
+    inset 0 0 35px rgba(35, 215, 145, .05);
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+/* Small orbital accent */
+
+.app:not(.discovery-mode) .wheel-container::after {
+  content: "";
+
+  position: absolute;
+
+  width: 320px;
+  height: 320px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  border: 1px dashed rgba(105, 235, 180, .16);
+
+  border-radius: 50%;
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+/* 2. INTRODUCTION AS A GLASS PANEL */
+
+.app:not(.discovery-mode) .intro {
+  position: absolute !important;
+
+  left: auto !important;
+  top: auto !important;
+
+  right: 28px !important;
+  bottom: 54px !important;
+
+  width: min(390px, 34vw) !important;
+  max-width: calc(100% - 45px) !important;
+
+  padding: 19px 21px !important;
+
+  box-sizing: border-box;
+
+  transform: none !important;
+
+  text-align: left !important;
+
+  isolation: isolate;
+
+  z-index: 8;
+
+  border: 1px solid rgba(120, 226, 188, .17);
+
+  border-radius: 13px;
+
+  background: transparent;
+
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, .18);
+
+  backdrop-filter: blur(1px);
+}
+
+/* Actual glass surface */
+
+.app:not(.discovery-mode) .intro::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(3, 14, 26, .90),
+      rgba(5, 19, 30, .70)
+    );
+
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08);
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+/* Top green accent */
+
+.app:not(.discovery-mode) .intro::after {
+  content: "";
+
+  position: absolute;
+
+  top: 17px;
+  left: -2px;
+
+  height: 38px;
+  width: 3px;
+
+  border-radius: 5px;
+
+  background: linear-gradient(
+    to bottom,
+    #73f4b8,
+    rgba(73, 220, 155, .15)
+  );
+
+  box-shadow: 0 0 14px rgba(73, 220, 155, .45);
+
+  z-index: 2;
+}
+
+/* Text styling */
+
+.app:not(.discovery-mode) .eyebrow {
+  justify-content: flex-start;
+
+  font-size: 8px;
+  letter-spacing: 1.8px;
+
+  color: #71eeb4;
+
+  margin-bottom: 9px;
+}
+
+.app:not(.discovery-mode) .intro h2 {
+  font-size: clamp(25px, 2.1vw, 34px);
+
+  line-height: 1.08;
+
+  letter-spacing: 1.2px;
+
+  margin: 0 0 10px;
+
+  text-shadow: 0 2px 16px rgba(0,0,0,.5);
+}
+
+.app:not(.discovery-mode) .intro p {
+  margin: 0;
+
+  font-size: 10.5px;
+
+  line-height: 1.6;
+
+  color: #c6d4df;
+}
+
+/* 3. KEEP PROTOTYPE LABEL BELOW THE PANEL */
+
+.demo-note {
+  right: 29px !important;
+  bottom: 68px !important;
+
+  font-size: 8px;
+
+  letter-spacing: 1.2px;
+
+  color: rgba(205, 225, 233, .65);
+
+  z-index: 9;
+}
+
+/* 4. DISCOVERY MODE REMAINS UNCHANGED */
+
+.app.discovery-mode .intro,
+.app.returning-mode .intro {
+  /* Existing discovery/return animation rules remain active. */
+}
+
+/* 5. RESPONSIVE DESIGN */
+
+@media (max-width: 900px) {
+  .app:not(.discovery-mode) .wheel-container {
+    left: 46% !important;
+    top: 53% !important;
+    transform: translate(-50%, -50%) scale(.72) !important;
+  }
+
+  .app:not(.discovery-mode) .intro {
+    right: 15px !important;
+    bottom: 50px !important;
+    width: min(330px, 42vw) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .app:not(.discovery-mode) .wheel-container {
+    left: 50% !important;
+    top: 51% !important;
+    transform: translate(-50%, -50%) scale(.62) !important;
+  }
+
+  .app:not(.discovery-mode) .intro {
+    right: 10px !important;
+    left: 10px !important;
+    bottom: 35px !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 13px 15px !important;
+  }
+
+  .app:not(.discovery-mode) .intro h2 {
+    font-size: 23px;
+  }
+}
+
+
+/* ==========================================================
+   WORLDSPIN — CINEMATIC FINISHING PASS
+   Append this block to the VERY BOTTOM of src/App.css.
+   It refines the current design without changing layout logic.
+========================================================== */
+
+/* ----------------------------------------------------------
+   1. Wheel: keep it prominent, soften the orbital decoration
+---------------------------------------------------------- */
+.app:not(.discovery-mode) .wheel-container {
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.55s ease,
+    opacity 0.55s ease;
+}
+
+.app:not(.discovery-mode) .wheel-container::before {
+  width: 360px !important;
+  height: 360px !important;
+  border: 1px solid rgba(105, 235, 180, 0.055) !important;
+  background: radial-gradient(
+    circle,
+    rgba(4, 25, 36, 0.30) 0%,
+    rgba(4, 22, 33, 0.16) 48%,
+    rgba(15, 100, 80, 0.045) 66%,
+    transparent 77%
+  ) !important;
+  box-shadow:
+    0 0 34px rgba(35, 215, 145, 0.055),
+    inset 0 0 28px rgba(35, 215, 145, 0.025) !important;
+}
+
+.app:not(.discovery-mode) .wheel-container::after {
+  width: 326px !important;
+  height: 326px !important;
+  border: 1px dashed rgba(105, 235, 180, 0.075) !important;
+  border-top-color: rgba(105, 235, 180, 0.19) !important;
+  opacity: 0.72;
+  animation: worldspin-orbit-drift 72s linear infinite;
+  transform-origin: center center;
+}
+
+@keyframes worldspin-orbit-drift {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.app:not(.discovery-mode) .wheel-container:hover {
+  transform: translate(-50%, -50%) scale(0.835) !important;
+  filter: drop-shadow(0 0 18px rgba(72, 232, 158, 0.22));
+}
+
+.app:not(.discovery-mode) .wheel-container:hover::after {
+  opacity: 0.95;
+  animation-duration: 38s;
+}
+
+.app:not(.discovery-mode) .wheel-outer {
+  transition:
+    filter 0.45s ease,
+    box-shadow 0.45s ease;
+}
+
+.app:not(.discovery-mode) .wheel-container:hover .wheel-outer {
+  filter: brightness(1.055);
+}
+
+@keyframes worldspin-button-breathe {
+  0%, 100% {
+    box-shadow: 0 0 18px rgba(72, 232, 158, 0.34);
+  }
+  50% {
+    box-shadow: 0 0 27px rgba(72, 232, 158, 0.58);
+  }
+}
+
+.app:not(.discovery-mode) .wheel-container:hover .spin-button:not(:disabled) {
+  animation: worldspin-button-breathe 1.9s ease-in-out infinite;
+}
+
+/* ----------------------------------------------------------
+   2. Headline: more compact, calmer glass surface
+---------------------------------------------------------- */
+.app:not(.discovery-mode) .intro {
+  right: 32px !important;
+  bottom: 54px !important;
+  width: min(420px, 30vw) !important;
+  max-width: calc(100% - 40px) !important;
+  box-sizing: border-box !important;
+  padding: 17px 20px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(126, 221, 187, 0.15) !important;
+  box-shadow:
+    0 12px 38px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+}
+
+.app:not(.discovery-mode) .intro::before {
+  background: linear-gradient(
+    135deg,
+    rgba(5, 17, 29, 0.78),
+    rgba(5, 19, 30, 0.62)
+  ) !important;
+  backdrop-filter: blur(15px) saturate(118%) !important;
+  -webkit-backdrop-filter: blur(15px) saturate(118%) !important;
+}
+
+.app:not(.discovery-mode) .intro::after {
+  top: 16px !important;
+  height: 34px !important;
+  opacity: 0.75;
+}
+
+.app:not(.discovery-mode) .eyebrow {
+  margin-bottom: 8px !important;
+  font-size: 8px !important;
+  letter-spacing: 1.55px !important;
+}
+
+.app:not(.discovery-mode) .intro h2 {
+  margin: 0 0 9px !important;
+  font-size: clamp(24px, 1.75vw, 31px) !important;
+  line-height: 1.10 !important;
+  letter-spacing: 1.0px !important;
+}
+
+.app:not(.discovery-mode) .intro p {
+  margin: 0 !important;
+  font-size: 10.5px !important;
+  line-height: 1.58 !important;
+  color: rgba(213, 225, 234, 0.88) !important;
+}
+
+/* Keep the prototype note distinct and aligned below the glass card. */
+.demo-note {
+  right: 32px !important;
+  bottom: 68px !important;
+  font-size: 7.5px !important;
+  letter-spacing: 1.15px !important;
+  color: rgba(197, 216, 226, 0.62) !important;
+}
+
+/* ----------------------------------------------------------
+   3. Discovery mode keeps its existing wheel transition.
+      Only reduce any strong orbital decoration there too.
+---------------------------------------------------------- */
+.app.discovery-mode .wheel-container::before,
+.app.discovery-mode .wheel-container::after {
+  opacity: 0.28;
+}
+
+.app.discovery-mode .wheel-container::after {
+  animation-duration: 100s;
+}
+
+/* ----------------------------------------------------------
+   4. Responsive refinements
+---------------------------------------------------------- */
+@media (max-width: 900px) {
+  .app:not(.discovery-mode) .intro {
+    right: 15px !important;
+    bottom: 48px !important;
+    width: min(370px, 42vw) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .app:not(.discovery-mode) .intro {
+    right: 10px !important;
+    left: 10px !important;
+    bottom: 34px !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 13px 15px !important;
+    text-align: center !important;
+  }
+
+  .app:not(.discovery-mode) .eyebrow {
+    justify-content: center !important;
+  }
+
+  .app:not(.discovery-mode) .intro h2 {
+    font-size: 23px !important;
+  }
+
+  .demo-note {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app:not(.discovery-mode) .wheel-container::after,
+  .app:not(.discovery-mode) .wheel-container:hover .spin-button:not(:disabled) {
+    animation: none !important;
+  }
+}
+
+
+
+/* ========================================================
+   LIVE 3D MAP & INTERACTIVE HUD REFINEMENT
+   ======================================================== */
+
+/* Fix pointer event passthrough so the entire map is draggable */
+.world-map {
+  z-index: 1 !important;
+  pointer-events: auto !important;
+}
+
+.maplibre-canvas {
+  pointer-events: auto !important;
+  cursor: grab !important;
+}
+
+.maplibre-canvas:active {
+  cursor: grabbing !important;
+}
+
+.map-overlay,
+.map-vignette,
+.map-grid {
+  pointer-events: none !important;
+}
+
+.main-content {
+  z-index: 10 !important;
+  pointer-events: none !important;
+}
+
+.intro,
+.wheel-container,
+.destination-panel,
+.map-minimized-hud,
+.topbar,
+.bottom-bar,
+.toast-notice {
+  pointer-events: auto !important;
+}
+
+.demo-note {
+  pointer-events: none !important;
+}
+
+/* Wheel Pointer Mechanical Physics Vibration */
+.wheel-pointer.is-ticking {
+  animation: pointerFlapperBounce 0.07s infinite alternate cubic-bezier(0.3, 0.9, 0.4, 1) !important;
+  transform-origin: 50% 0% !important;
+}
+
+@keyframes pointerFlapperBounce {
+  0% {
+    transform: translateX(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateX(-50%) rotate(-7.5deg);
+  }
+}
+
+/* Destination Top Actions (Roam Map, Share, Close) */
+.destination-panel-top-actions {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 25;
+}
+
+.dest-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(4, 16, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
+  color: #d1e2ec;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all 0.22s ease;
+}
+
+.dest-action-pill:hover {
+  background: rgba(84, 239, 168, 0.18);
+  border-color: var(--dest-accent, #54efa8);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.destination-badge-tag {
+  position: absolute;
+  bottom: 12px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(3, 10, 20, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e5fbf2;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+/* Destination Telemetry & Local Time */
+.destination-telemetry-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 6px;
+}
+
+.telemetry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #c2d2df;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+}
+
+.telemetry-pill strong {
+  color: var(--dest-accent, #54efa8);
+}
+
+/* Destination Highlights Tags */
+.destination-highlights {
+  margin: 14px 0 16px;
+}
+
+.highlights-title {
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  color: #8da4b5;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.highlights-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.highlight-tag {
+  padding: 4px 10px;
+  background: rgba(84, 239, 168, 0.08);
+  border: 1px solid rgba(84, 239, 168, 0.22);
+  border-radius: 6px;
+  color: #ddf5ea;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Minimized Floating HUD for Free Map Roaming */
+.map-minimized-hud {
+  position: absolute;
+  bottom: 24px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: rgba(4, 15, 24, 0.9);
+  border: 1px solid rgba(88, 231, 162, 0.45);
+  border-radius: 36px;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.65),
+    0 0 20px rgba(88, 231, 162, 0.15);
+  z-index: 40;
+  animation: hudSlideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes hudSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.minimized-pill-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.minimized-number {
+  color: #63e8ac;
+}
+
+.minimized-name {
+  color: #ffffff;
+}
+
+.minimized-country {
+  color: #9cb3c2;
+  font-weight: 500;
+}
+
+.minimized-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.minimized-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.minimized-btn.primary {
+  background: linear-gradient(135deg, #62eab0, #20bc82);
+  color: #031811;
+  box-shadow: 0 0 12px rgba(72, 232, 158, 0.3);
+}
+
+.minimized-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(72, 232, 158, 0.5);
+}
+
+.minimized-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #dbe8ef;
+}
+
+.minimized-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+/* Toast Notification */
+.toast-notice {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: rgba(5, 22, 25, 0.94);
+  border: 1px solid #54efa8;
+  border-radius: 30px;
+  color: #ecfff6;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.65),
+    0 0 20px rgba(84, 239, 168, 0.35);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+  animation: toastFade 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes toastFade {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 15px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 600px) {
+  .map-minimized-hud {
+    left: 12px;
+    right: 12px;
+    bottom: 68px;
+    padding: 8px 12px;
+    justify-content: space-between;
+  }
+}
+
+
+/* Admin header toggle button */
+.admin-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(84, 239, 168, 0.12);
+  border: 1px solid rgba(84, 239, 168, 0.38);
+  border-radius: 20px;
+  color: #63e8ac;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-header-btn:hover {
+  background: rgba(84, 239, 168, 0.25);
+  border-color: #54efa8;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(84, 239, 168, 0.35);
+}
+
+/* ========================================================
+   TEXT-ONLY DESTINATION PANEL & FIELD GUIDE CARDS
+   ======================================================== */
+
+.destination-panel-textonly .destination-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  background: linear-gradient(
+    135deg,
+    rgba(6, 20, 32, 0.96),
+    rgba(4, 13, 22, 0.92)
+  );
+  flex-shrink: 0;
+}
+
+.destination-panel-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.destination-num-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: #031510;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+}
+
+.destination-editorial-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #dff4ea;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.destination-panel-textonly .destination-panel-top-actions {
+  position: static;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.destination-panel-textonly .destination-close {
+  position: static;
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.destination-panel-textonly .destination-close span {
+  font-size: 20px;
+}
+
+.destination-panel-textonly .destination-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.destination-panel-textonly .destination-panel-content {
+  padding: 18px 20px 22px;
+}
+
+.destination-section-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  color: #7da0b5;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.destination-panel-textonly .destination-story {
+  font-size: 12.8px;
+  line-height: 1.75;
+  color: #d6e2ee;
+  margin-bottom: 18px;
+}
+
+.destination-guide {
+  margin: 4px 0 18px;
+}
+
+.destination-guide-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guide-card {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.guide-card:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(84, 239, 168, 0.35);
+}
+
+.guide-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.guide-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  color: var(--dest-accent, #54efa8);
+}
+
+.guide-affiliate-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(84, 239, 168, 0.12);
+  border: 1px solid rgba(84, 239, 168, 0.35);
+  color: #8bf5c3;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.guide-affiliate-link:hover {
+  background: rgba(84, 239, 168, 0.24);
+  border-color: #54efa8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.guide-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f3f7fb;
+  margin-bottom: 4px;
+}
+
+.guide-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: #aec0d0;
+}
+
+@media (max-width: 600px) {
+  .destination-panel-textonly .destination-panel-header {
+    padding: 10px 12px;
+  }
+
+  .destination-panel-textonly .dest-action-pill span {
+    display: none;
+  }
+
+  .guide-card {
+    padding: 10px 11px;
+  }
+}

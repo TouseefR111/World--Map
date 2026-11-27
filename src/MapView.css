@@ -1,57 +1,156 @@
-
 .maplibre-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   background: #030711;
+  cursor: grab;
+}
+
+.maplibre-canvas:active {
+  cursor: grabbing;
 }
 
 .maplibre-canvas .maplibregl-canvas {
   outline: none;
 }
 
-/* Destination marker */
+/* ========================================
+   DESTINATION HUD MARKER
+   ======================================== */
 
 .map-destination-marker {
   position: relative;
-  width: 17px;
-  height: 17px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.map-destination-marker .marker-core {
+  position: absolute;
+  inset: 2px;
   border-radius: 50%;
   background: #54efa8;
   border: 3px solid #ffffff;
   box-shadow:
-    0 0 10px #54efa8,
-    0 0 25px rgba(84, 239, 168, .8);
+    0 0 12px #54efa8,
+    0 0 28px rgba(84, 239, 168, 0.9);
+  z-index: 2;
 }
 
-.map-destination-marker::before {
-  content: "";
+.map-destination-marker .marker-beacon {
   position: absolute;
-  inset: -9px;
+  inset: -12px;
   border-radius: 50%;
   border: 2px solid #54efa8;
-  animation: destinationPulse 1.7s infinite;
+  animation: destinationPulse 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  z-index: 1;
+}
+
+.map-destination-marker .marker-label {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(3, 11, 22, 0.92);
+  color: #ebfff6;
+  border: 1px solid rgba(88, 231, 162, 0.55);
+  backdrop-filter: blur(10px);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.65),
+    0 0 14px rgba(84, 239, 168, 0.25);
+  z-index: 3;
+}
+
+.map-destination-marker .marker-label::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid rgba(88, 231, 162, 0.55);
 }
 
 @keyframes destinationPulse {
   0% {
-    transform: scale(.55);
+    transform: scale(0.45);
     opacity: 1;
   }
-
   100% {
-    transform: scale(2.4);
+    transform: scale(2.8);
     opacity: 0;
   }
 }
 
-/* Preserve readable map attribution */
+/* ========================================
+   CUSTOM STYLED NAVIGATION CONTROLS (ZOOM / COMPASS)
+   ======================================== */
+
+.maplibre-canvas .maplibregl-ctrl-bottom-right {
+  bottom: 74px !important;
+  right: 22px !important;
+  z-index: 35 !important;
+}
+
+.maplibre-canvas .maplibregl-ctrl-group {
+  background: rgba(4, 15, 24, 0.88) !important;
+  border: 1px solid rgba(88, 231, 162, 0.35) !important;
+  backdrop-filter: blur(14px) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 16px rgba(88, 231, 162, 0.12) !important;
+  overflow: hidden;
+  margin: 0 !important;
+}
+
+.maplibre-canvas .maplibregl-ctrl-group button {
+  width: 36px !important;
+  height: 36px !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.maplibre-canvas .maplibregl-ctrl-group button:last-child {
+  border-bottom: none !important;
+}
+
+.maplibre-canvas .maplibregl-ctrl-group button:hover {
+  background: rgba(88, 231, 162, 0.22) !important;
+}
+
+.maplibre-canvas .maplibregl-ctrl-icon {
+  filter: invert(1) brightness(1.7) hue-rotate(85deg) !important;
+}
+
+/* ========================================
+   ATTRIBUTION STYLING
+   ======================================== */
 
 .maplibregl-ctrl-attrib {
-  background: rgba(3, 10, 20, .85) !important;
+  background: rgba(3, 10, 20, 0.88) !important;
   color: #c2d0d9 !important;
   font-size: 9px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .maplibregl-ctrl-attrib a {
@@ -62,4 +161,218 @@
   .maplibre-canvas {
     min-height: 100%;
   }
+
+  .maplibre-canvas .maplibregl-ctrl-bottom-right {
+    bottom: 64px !important;
+    right: 12px !important;
+  }
+}
+
+/* ========================================
+   GREENLAND PERMANENT ORANGE DOT
+   ======================================== */
+
+.greenland-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ff9d42, #ff6b00 65%, #d94e00);
+  border: 2px solid #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(255, 107, 0, 0.35),
+    0 0 14px rgba(255, 107, 0, 0.75);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+  animation: greenlandPulse 2.6s ease-in-out infinite;
+}
+
+.greenland-dot:hover,
+.greenland-dot:focus-visible {
+  transform: scale(1.4);
+  outline: none;
+  box-shadow:
+    0 0 0 6px rgba(255, 107, 0, 0.3),
+    0 0 24px rgba(255, 107, 0, 0.95);
+}
+
+@keyframes greenlandPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.35), 0 0 14px rgba(255, 107, 0, 0.75);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 107, 0, 0.1), 0 0 26px rgba(255, 107, 0, 0.5);
+  }
+}
+
+/* ========================================
+   GREENLAND HOVER POPUP
+   ======================================== */
+
+.greenland-popup {
+  position: fixed;
+  z-index: 9999;
+  width: min(390px, calc(100vw - 32px));
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(165deg, rgba(10, 18, 34, 0.96), rgba(5, 10, 20, 0.98));
+  border: 1px solid rgba(255, 126, 41, 0.38);
+  border-radius: 16px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.8),
+    0 0 36px rgba(255, 107, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+
+  /* Smooth appear/disappear; interactive only when visible */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.97);
+  transition:
+    opacity 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.2s;
+}
+
+.greenland-popup.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.greenland-popup::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff7b1c, #ffb067, transparent);
+}
+
+.greenland-popup-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
+}
+
+.greenland-popup-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.greenland-popup-badge {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff7b1c;
+  box-shadow: 0 0 8px #ff7b1c;
+  flex-shrink: 0;
+}
+
+.greenland-popup-coords {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #ff9c52;
+}
+
+.greenland-popup-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.greenland-popup-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: #f4f7fb;
+}
+
+.greenland-popup-close {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #9fb0c7;
+  font-size: 17px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.greenland-popup-close:hover {
+  background: rgba(255, 107, 0, 0.2);
+  border-color: rgba(255, 126, 41, 0.5);
+  color: #ffffff;
+}
+
+.greenland-popup-body {
+  padding: 14px 18px 18px;
+  max-height: min(300px, 52vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #cfdbe8;
+  font-weight: 400;
+}
+
+.greenland-popup-body p {
+  margin: 0 0 11px;
+}
+
+.greenland-popup-body p:last-child {
+  margin-bottom: 0;
+}
+
+.greenland-popup-question {
+  color: #ffb067;
+  font-weight: 600;
+  font-size: 13.5px;
+  margin-top: 14px !important;
+}
+
+.greenland-popup-answer {
+  padding: 10px 12px;
+  border-left: 2.5px solid #ff7b1c;
+  background: rgba(255, 107, 0, 0.08);
+  border-radius: 0 8px 8px 0;
+  color: #eef4fb;
+  font-weight: 500;
+}
+
+.greenland-popup-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.greenland-popup-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+}
+
+.greenland-popup-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 126, 41, 0.45);
+  border-radius: 4px;
+}
+
+.greenland-popup-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 126, 41, 0.75);
 }
